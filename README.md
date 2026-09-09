@@ -76,6 +76,7 @@ It found five failures in the original build of this very page, and then two mor
 the rebuild that replaced it, including a regression its own author had missed.
 
 - `SKILL.md` — the skill itself
+- `CHANGELOG.md` — how it relates to the Data Vizard skills, and what changed between versions
 - `references/measures.md` — Jaccard, nPMI, lift, cosine, and when each is right
 - `references/methods.md` — what each layout method licenses you to claim
 - `references/interaction.md` — occlusion, zoom, and the scroll conflict
