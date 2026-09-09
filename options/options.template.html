@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>imdb-top-1000-films — Design Direction Options</title>
+<style>
+  :root{
+    --ink:#1a1815;
+    --paper:#faf7f0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;}
+  header.intro{padding:28px 32px 18px;border-bottom:1px solid #d8d2c4;}
+  header.intro h1{font-size:15px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px;font-weight:600;}
+  header.intro p{margin:0;font-size:13px;color:#5a564c;max-width:64ch;line-height:1.5;}
+  nav.jump{display:flex;gap:14px;padding:12px 32px;font-size:12px;border-bottom:1px solid #d8d2c4;background:#f2ede1;position:sticky;top:0;z-index:50;}
+  nav.jump a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent;}
+  nav.jump a:hover{border-bottom-color:var(--ink);}
+
+  section.opt{padding:36px 32px 44px;border-bottom:1px solid #d8d2c4;}
+  .opt-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:18px;max-width:1400px;margin-left:auto;margin-right:auto;}
+  .opt-head .eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.6;margin:0 0 4px;}
+  .opt-head h2{margin:0;font-size:26px;font-weight:700;}
+  .opt-head .tagline{font-size:13px;color:#5a564c;margin:4px 0 0;max-width:52ch;}
+  .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px 20px;font-size:11.5px;line-height:1.45;max-width:1400px;margin:0 auto 22px;padding:14px 16px;background:#f2ede1;border:1px solid #ddd7c8;}
+  .meta-grid dt{font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:10px;opacity:.65;margin:0 0 2px;}
+  .meta-grid dd{margin:0;}
+
+  .stage{position:relative;max-width:1400px;margin:0 auto;border:1px solid #ddd7c8;overflow:hidden;}
+  .stage img{position:absolute;object-fit:cover;border-radius:2px;}
+  .stage svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+  .poster{position:absolute;object-fit:cover;border-radius:2px;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease, z-index 0s;}
+  .poster:hover{transform:scale(2.4);z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.35);}
+  .film-label{position:absolute;font-size:10.5px;line-height:1.3;padding:3px 6px;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity .1s;z-index:201;}
+  .poster:hover + .film-label, .poster-wrap:hover .film-label{opacity:1;}
+
+  /* Option A — The Constellation */
+  #stage-a{height:820px;background:#15130f;}
+  #stage-a .genre-tag{position:absolute;font:italic 11px Georgia,serif;color:#c9c2ae;letter-spacing:.03em;opacity:.55;transform:translate(-50%,-50%);pointer-events:none;}
+  #stage-a .film-label{color:#f2ede1;background:rgba(10,9,7,.92);border:1px solid #3a352b;}
+
+  /* Option B — Genre Weave */
+  #stage-b{height:820px;background:#efe8d8;}
+  #stage-b .thread-label{position:absolute;font:600 10px/1.2 Georgia,serif;letter-spacing:.05em;text-transform:uppercase;color:#6b6350;}
+  #stage-b .film-label{color:#fbf8f0;background:rgba(26,24,19,.92);}
+
+  /* Option C — Genre Broadsheet */
+  #stage-c{background:#e7e1d2;padding:0;border:none;}
+  .broadsheet-grid{background:#c9c2ae;padding:1px;}
+  .zone{background:#e7e1d2;padding:8px;overflow:hidden;position:relative;}
+  .zone.tier-large{width:100%;margin-bottom:1px;}
+  .column-flow{columns:4 240px;column-gap:1px;}
+  .zone.tier-medium,.zone.tier-small{break-inside:avoid;margin-bottom:1px;}
+  .zone h3{font:800 13px/1.1 Georgia,'Times New Roman',serif;text-transform:uppercase;letter-spacing:.02em;margin:0 0 6px;padding-bottom:4px;border-bottom:2px solid var(--ink);}
+  .zone .thumbs{display:flex;flex-wrap:wrap;gap:3px;}
+  .zone .thumbs img{width:26px;height:38px;object-fit:cover;border-radius:1px;}
+  .zone .thumbs img.dup{outline:1px dashed #6b6350;outline-offset:1px;opacity:.85;}
+  #stage-c .film-label{color:#fbf8f0;background:rgba(26,24,19,.92);}
+
+  .risk-strengths{max-width:1400px;margin:18px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:12.5px;line-height:1.5;}
+  .risk-strengths h4{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px;opacity:.65;}
+  footer.note{padding:22px 32px 60px;font-size:11.5px;color:#7a7568;max-width:70ch;}
+</style>
+</head>
+<body>
+
+<header class="intro">
+  <h1>Design Direction Options — imdb-top-1000-films</h1>
+  <p>Three genuinely different ways to compose the "genre constellation" poster wall, built with real posters from the curated dataset (126-film sample, not the full 1000). This is a comparison tool for direction-choice only — not the final artifact. Hover any poster for its local title/year/director reveal.</p>
+</header>
+<nav class="jump">
+  <a href="#option-a">A · The Constellation</a>
+  <a href="#option-b">B · Genre Weave</a>
+  <a href="#option-c">C · Genre Broadsheet</a>
+</nav>
+
+<section class="opt" id="option-a">
+  <div class="opt-head">
+    <div>
+      <p class="eyebrow">Option A</p>
+      <h2>The Constellation</h2>
+      <p class="tagline">Genre acts as a gravitational cluster. Films with one genre sit tight around their cluster; films with several genres drift into the space between clusters they belong to, with faint threads showing the pull.</p>
+    </div>
+  </div>
+  <dl class="meta-grid">
+    <div><dt>Spatial archetype</dt><dd>Star field / constellation chart</dd></div>
+    <div><dt>Composition</dt><dd>Radial cluster field, dark ground</dd></div>
+    <div><dt>Interaction</dt><dd>Ambient scan, local hover reveal, slow drift</dd></div>
+    <div><dt>Rendering</dt><dd>Deterministic cluster-centroid placement + thin SVG connector lines (would move to Canvas + a real D3-force simulation at full 1000-record scale for performance)</dd></div>
+    <div><dt>Color temperature</dt><dd>Cold-neutral ink-black ground, warm paper-toned posters as the only light</dd></div>
+    <div><dt>Typographic attitude</dt><dd>Quiet italic star-chart labels, near-invisible until focused</dd></div>
+  </dl>
+  <div class="stage" id="stage-a"></div>
+  <div class="risk-strengths">
+    <div><h4>Strengths</h4>Multi-genre membership is structural, not captioned — a film visibly sits between its clusters. Most purely data-art of the three; abandons chart grammar entirely (position is emergent, not axis-encoded).</div>
+    <div><h4>Risks</h4>Needs real force-simulation + Canvas to stay legible and performant at 1000 records (SVG/DOM alone would strain). Dense middle ground between popular clusters (e.g. Drama-Crime-Thriller) could get crowded and needs deliberate collision handling.</div>
+  </div>
+</section>
+
+<section class="opt" id="option-b">
+  <div class="opt-head">
+    <div>
+      <p class="eyebrow">Option B</p>
+      <h2>Genre Weave</h2>
+      <p class="tagline">Genres run as physical threads through the composition. A film with two genres sits where its threads actually cross — the crossing point is the multi-genre fact, not a note about it.</p>
+    </div>
+  </div>
+  <dl class="meta-grid">
+    <div><dt>Spatial archetype</dt><dd>Woven lattice / textile notation</dd></div>
+    <div><dt>Composition</dt><dd>Warp/weft thread grid, warm archival ground</dd></div>
+    <div><dt>Interaction</dt><dd>Close reading along threads, local hover reveal</dd></div>
+    <div><dt>Rendering</dt><dd>SVG thread paths + deterministic intersection placement (stable, no simulation needed — would scale cleanly to 1000 records)</dd></div>
+    <div><dt>Color temperature</dt><dd>Warm bone/cream ground, ink-toned thread lines</dd></div>
+    <div><dt>Typographic attitude</dt><dd>Small-caps thread labels at the loom edge, archival-card register</dd></div>
+  </dl>
+  <div class="stage" id="stage-b"></div>
+  <div class="risk-strengths">
+    <div><h4>Strengths</h4>Multi-genre membership is the literal construction principle — the strongest, most honest answer to the Analyst's caveat of any option. Deterministic layout scales predictably to all 1000 records without a simulation.</div>
+    <div><h4>Risks</h4>Only handles two crossing genres cleanly; a third genre needs a secondary "stitch" mark, which is a real but weaker signal. Grid regularity could read as more chart-like than intended if thread lines are too prominent — needs restraint in stroke weight.</div>
+  </div>
+</section>
+
+<section class="opt" id="option-c">
+  <div class="opt-head">
+    <div>
+      <p class="eyebrow">Option C</p>
+      <h2>Genre Broadsheet</h2>
+      <p class="tagline">An editorial page, not a grid: Drama runs as the dominant lead spread, rarer genres sit as small marginal columns — the way a trade paper's front page varies story weight by importance, not a uniform layout.</p>
+    </div>
+  </div>
+  <dl class="meta-grid">
+    <div><dt>Spatial archetype</dt><dd>Broadsheet / trade-paper front page</dd></div>
+    <div><dt>Composition</dt><dd>Irregular editorial zones, sized by genre weight, newsprint ground</dd></div>
+    <div><dt>Interaction</dt><dd>Scan across zones, local hover reveal within each zone</dd></div>
+    <div><dt>Rendering</dt><dd>CSS grid with hand-set zone tiers (not an algorithmic treemap — sizing is editorially chosen, not strictly proportional, to avoid reading as a chart)</dd></div>
+    <div><dt>Color temperature</dt><dd>Warm newsprint gray ground, distinct from A's ink-black and B's cream</dd></div>
+    <div><dt>Typographic attitude</dt><dd>Bold serif section heads, masthead-weight hierarchy</dd></div>
+  </dl>
+  <div class="stage" id="stage-c">
+    <div class="broadsheet-grid" id="broadsheet-grid"></div>
+  </div>
+  <div class="risk-strengths">
+    <div><h4>Strengths</h4>Most legible/browsable of the three at a glance — the composition-led option requested for the set. Drama's real dominance becomes an intentional lead-story treatment instead of an accident.</div>
+    <div><h4>Risks</h4>Closest of the three to conventional editorial grid — needs deliberately irregular, hand-tuned zone sizing (not strict proportional area) to avoid reading as a disguised treemap chart. Duplicate "clipping" thumbnails for multi-genre films need restraint or the page gets visually noisy.</div>
+  </div>
+</section>
+
+<footer class="note">
+  Built from real curated data (poster thumbnails, titles, years, directors, genres) — this is a direction-comparison tool, not the final artifact. All three avoid dashboard/filter-chip UI, use only muted ink/paper tones (no accent hue), and keep genre labels as the source genre names verbatim, per the approved brief and narrative handoff.
+</footer>
+
+<script>
+const SAMPLE = __SAMPLE_DATA__;
+const GENRE_ORDER = __GENRE_ORDER__;
+
+function seededRandom(seed){
+  let h = 0;
+  for (let i=0;i<seed.length;i++){ h = (h*31 + seed.charCodeAt(i)) | 0; }
+  return function(){
+    h = (h * 1664525 + 1013904223) | 0;
+    return ((h >>> 0) / 4294967296);
+  };
+}
+
+function mkImg(film, w, h){
+  const img = document.createElement('img');
+  img.src = film.poster_url_thumb;
+  img.alt = film.title;
+  img.loading = 'lazy';
+  img.style.width = w + 'px';
+  img.style.height = h + 'px';
+  img.onerror = function(){
+    // styled fallback, matching brief: title/year/director, no error text
+    const card = document.createElement('div');
+    card.style.width = w + 'px';
+    card.style.height = h + 'px';
+    card.style.display = 'flex';
+    card.style.alignItems = 'center';
+    card.style.justifyContent = 'center';
+    card.style.textAlign = 'center';
+    card.style.fontSize = '7px';
+    card.style.lineHeight = '1.2';
+    card.style.padding = '2px';
+    card.style.background = '#3a352b';
+    card.style.color = '#d8d2c0';
+    card.style.borderRadius = '2px';
+    card.textContent = film.title;
+    img.replaceWith(card);
+  };
+  return img;
+}
+
+function attachLabel(wrap, film){
+  wrap.addEventListener('mouseenter', () => {
+    let lbl = wrap.querySelector('.film-label');
+    if (!lbl){
+      lbl = document.createElement('div');
+      lbl.className = 'film-label';
+      lbl.textContent = film.title + ' · ' + film.year + ' · ' + film.director;
+      wrap.appendChild(lbl);
+    }
+    lbl.style.opacity = '1';
+    lbl.style.left = '0';
+    lbl.style.top = '105%';
+  });
+  wrap.addEventListener('mouseleave', () => {
+    const lbl = wrap.querySelector('.film-label');
+    if (lbl) lbl.style.opacity = '0';
+  });
+}
+
+/* ---------- Option A: Constellation ---------- */
+function buildConstellation(){
+  const stage = document.getElementById('stage-a');
+  const W = stage.clientWidth, H = stage.clientHeight;
+  const cx = W/2, cy = H/2, R = Math.min(W,H)*0.40;
+  const centers = {};
+  GENRE_ORDER.forEach((g,i) => {
+    const a = (i / GENRE_ORDER.length) * Math.PI * 2 - Math.PI/2;
+    centers[g] = { x: cx + Math.cos(a)*R, y: cy + Math.sin(a)*R };
+  });
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  stage.appendChild(svg);
+
+  GENRE_ORDER.forEach(g => {
+    const tag = document.createElement('div');
+    tag.className = 'genre-tag';
+    tag.textContent = g;
+    tag.style.left = centers[g].x + 'px';
+    tag.style.top = centers[g].y + 'px';
+    stage.appendChild(tag);
+  });
+
+  SAMPLE.forEach(film => {
+    const rnd = seededRandom(film.id);
+    const pts = film.genres.filter(g => centers[g]).map(g => centers[g]);
+    if (!pts.length) return;
+    const mx = pts.reduce((s,p)=>s+p.x,0)/pts.length;
+    const my = pts.reduce((s,p)=>s+p.y,0)/pts.length;
+    const jx = (rnd()-0.5) * 46;
+    const jy = (rnd()-0.5) * 46;
+    const x = mx + jx, y = my + jy;
+
+    if (pts.length > 1){
+      pts.forEach(p => {
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1', x); line.setAttribute('y1', y);
+        line.setAttribute('x2', p.x); line.setAttribute('y2', p.y);
+        line.setAttribute('stroke', '#5a5443');
+        line.setAttribute('stroke-width', '0.5');
+        line.setAttribute('opacity', '0.35');
+        svg.appendChild(line);
+      });
+    }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'poster-wrap';
+    wrap.style.position = 'absolute';
+    wrap.style.left = x + 'px';
+    wrap.style.top = y + 'px';
+    const img = mkImg(film, 22, 32);
+    img.className = 'poster';
+    img.style.left = '0'; img.style.top = '0'; img.style.position='absolute';
+    wrap.appendChild(img);
+    attachLabel(wrap, film);
+    stage.appendChild(wrap);
+  });
+}
+
+/* ---------- Option B: Genre Weave ---------- */
+function buildWeave(){
+  const stage = document.getElementById('stage-b');
+  const W = stage.clientWidth, H = stage.clientHeight;
+  const warpGenres = GENRE_ORDER.slice(0,11);
+  const weftGenres = GENRE_ORDER.slice(11);
+  const marginX = 70, marginY = 50;
+  const warpX = {}, weftY = {};
+  warpGenres.forEach((g,i) => { warpX[g] = marginX + (i/(warpGenres.length-1)) * (W - marginX*2); });
+  weftGenres.forEach((g,i) => { weftY[g] = marginY + (i/(weftGenres.length-1)) * (H - marginY*2); });
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  stage.appendChild(svg);
+  warpGenres.forEach(g => {
+    const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1', warpX[g]); l.setAttribute('y1', 20);
+    l.setAttribute('x2', warpX[g]); l.setAttribute('y2', H-20);
+    l.setAttribute('stroke', '#c9c2ae'); l.setAttribute('stroke-width', '1');
+    svg.appendChild(l);
+    const lbl = document.createElement('div');
+    lbl.className = 'thread-label';
+    lbl.textContent = g;
+    lbl.style.left = (warpX[g]-8) + 'px';
+    lbl.style.top = '6px';
+    lbl.style.writingMode = 'vertical-rl';
+    stage.appendChild(lbl);
+  });
+  weftGenres.forEach(g => {
+    const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1', 20); l.setAttribute('y1', weftY[g]);
+    l.setAttribute('x2', W-20); l.setAttribute('y2', weftY[g]);
+    l.setAttribute('stroke', '#c9c2ae'); l.setAttribute('stroke-width', '1');
+    svg.appendChild(l);
+    const lbl = document.createElement('div');
+    lbl.className = 'thread-label';
+    lbl.textContent = g;
+    lbl.style.left = '4px';
+    lbl.style.top = (weftY[g]-6) + 'px';
+    stage.appendChild(lbl);
+  });
+
+  const occupied = {};
+  SAMPLE.forEach(film => {
+    const rnd = seededRandom(film.id + 'w');
+    const wG = film.genres.find(g => warpX[g] !== undefined);
+    const fG = film.genres.find(g => weftY[g] !== undefined);
+    let x, y;
+    if (wG && fG){
+      const key = wG+'|'+fG;
+      const n = occupied[key] = (occupied[key]||0) + 1;
+      const spread = (n-1) * 16;
+      const ang = (n-1) * 2.4;
+      x = warpX[wG] + Math.cos(ang) * spread * 0.5;
+      y = weftY[fG] + Math.sin(ang) * spread * 0.5;
+    } else if (wG){
+      x = warpX[wG] + (rnd()-0.5)*14;
+      y = marginY + rnd() * (H - marginY*2);
+    } else if (fG){
+      x = marginX + rnd() * (W - marginX*2);
+      y = weftY[fG] + (rnd()-0.5)*14;
+    } else {
+      x = marginX + rnd()*(W-marginX*2);
+      y = marginY + rnd()*(H-marginY*2);
+    }
+
+    const thirdGenre = film.genres.find(g => g !== wG && g !== fG && (warpX[g]!==undefined || weftY[g]!==undefined));
+    if (thirdGenre){
+      const tx = warpX[thirdGenre] !== undefined ? warpX[thirdGenre] : x;
+      const ty = weftY[thirdGenre] !== undefined ? weftY[thirdGenre] : y;
+      const stitch = document.createElementNS('http://www.w3.org/2000/svg','line');
+      stitch.setAttribute('x1', x); stitch.setAttribute('y1', y);
+      stitch.setAttribute('x2', tx); stitch.setAttribute('y2', ty);
+      stitch.setAttribute('stroke', '#8a836d');
+      stitch.setAttribute('stroke-width', '0.5');
+      stitch.setAttribute('stroke-dasharray', '2,3');
+      stitch.setAttribute('opacity', '0.5');
+      svg.appendChild(stitch);
+    }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'poster-wrap';
+    wrap.style.position = 'absolute';
+    wrap.style.left = x + 'px';
+    wrap.style.top = y + 'px';
+    const img = mkImg(film, 20, 29);
+    img.className = 'poster';
+    img.style.left='0'; img.style.top='0'; img.style.position='absolute';
+    wrap.appendChild(img);
+    attachLabel(wrap, film);
+    stage.appendChild(wrap);
+  });
+}
+
+/* ---------- Option C: Genre Broadsheet ---------- */
+function buildBroadsheet(){
+  const grid = document.getElementById('broadsheet-grid');
+  const tiers = {
+    Drama: 'large',
+    Comedy: 'medium', Crime: 'medium', Adventure: 'medium', Action: 'medium',
+  };
+  GENRE_ORDER.forEach(g => { if (!tiers[g]) tiers[g] = 'small'; });
+
+  const zoneFilms = {};
+  GENRE_ORDER.forEach(g => zoneFilms[g] = []);
+  const dupSeen = {};
+
+  SAMPLE.forEach(film => {
+    let primary = tiers[film.primary_genre] ? film.primary_genre : film.genres.find(g => tiers[g]);
+    if (!primary) return;
+    zoneFilms[primary].push({film, dup:false});
+    const secondary = film.genres.find(g => g !== primary && tiers[g]);
+    if (secondary && !dupSeen[film.id]){
+      zoneFilms[secondary].push({film, dup:true});
+      dupSeen[film.id] = true;
+    }
+  });
+
+  const colFlow = document.createElement('div');
+  colFlow.className = 'column-flow';
+
+  GENRE_ORDER.forEach(g => {
+    if (!zoneFilms[g].length) return;
+    const zone = document.createElement('div');
+    zone.className = 'zone tier-' + tiers[g];
+    const h3 = document.createElement('h3');
+    h3.textContent = g;
+    zone.appendChild(h3);
+    const thumbs = document.createElement('div');
+    thumbs.className = 'thumbs';
+    const thumbSize = tiers[g] === 'large' ? [34, 49] : [24, 35];
+    zoneFilms[g].forEach(({film, dup}) => {
+      const wrap = document.createElement('span');
+      wrap.className = 'poster-wrap';
+      wrap.style.position = 'relative';
+      wrap.style.display = 'inline-block';
+      const img = mkImg(film, thumbSize[0], thumbSize[1]);
+      if (dup) img.classList.add('dup');
+      wrap.appendChild(img);
+      attachLabel(wrap, film);
+      thumbs.appendChild(wrap);
+    });
+    zone.appendChild(thumbs);
+    if (tiers[g] === 'large') grid.appendChild(zone);
+    else colFlow.appendChild(zone);
+  });
+
+  grid.appendChild(colFlow);
+}
+
+buildConstellation();
+buildWeave();
+buildBroadsheet();
+</script>
+</body>
+</html>

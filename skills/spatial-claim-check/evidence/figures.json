@@ -1,0 +1,501 @@
+{
+ "totals": {
+  "films": 1000,
+  "genres": 21
+ },
+ "share": [
+  {
+   "genre": "Drama",
+   "n": 724,
+   "pct": 72.4
+  },
+  {
+   "genre": "Comedy",
+   "n": 233,
+   "pct": 23.3
+  },
+  {
+   "genre": "Crime",
+   "n": 209,
+   "pct": 20.9
+  },
+  {
+   "genre": "Adventure",
+   "n": 196,
+   "pct": 19.6
+  },
+  {
+   "genre": "Action",
+   "n": 189,
+   "pct": 18.9
+  },
+  {
+   "genre": "Thriller",
+   "n": 137,
+   "pct": 13.7
+  },
+  {
+   "genre": "Romance",
+   "n": 125,
+   "pct": 12.5
+  },
+  {
+   "genre": "Biography",
+   "n": 109,
+   "pct": 10.9
+  },
+  {
+   "genre": "Mystery",
+   "n": 99,
+   "pct": 9.9
+  },
+  {
+   "genre": "Animation",
+   "n": 82,
+   "pct": 8.2
+  },
+  {
+   "genre": "Sci-Fi",
+   "n": 67,
+   "pct": 6.7
+  },
+  {
+   "genre": "Fantasy",
+   "n": 66,
+   "pct": 6.6
+  },
+  {
+   "genre": "History",
+   "n": 56,
+   "pct": 5.6
+  },
+  {
+   "genre": "Family",
+   "n": 56,
+   "pct": 5.6
+  },
+  {
+   "genre": "War",
+   "n": 51,
+   "pct": 5.1
+  },
+  {
+   "genre": "Music",
+   "n": 35,
+   "pct": 3.5
+  },
+  {
+   "genre": "Horror",
+   "n": 32,
+   "pct": 3.2
+  },
+  {
+   "genre": "Western",
+   "n": 20,
+   "pct": 2
+  },
+  {
+   "genre": "Film-Noir",
+   "n": 19,
+   "pct": 1.9
+  },
+  {
+   "genre": "Sport",
+   "n": 19,
+   "pct": 1.9
+  },
+  {
+   "genre": "Musical",
+   "n": 17,
+   "pct": 1.7
+  }
+ ],
+ "slope": [
+  {
+   "label": "Crime + Drama",
+   "raw": 160,
+   "jaccard": 0.207,
+   "rankRaw": 1,
+   "rankJac": 3
+  },
+  {
+   "label": "Comedy + Drama",
+   "raw": 123,
+   "jaccard": 0.147,
+   "rankRaw": 2,
+   "rankJac": 11
+  },
+  {
+   "label": "Drama + Romance",
+   "raw": 106,
+   "jaccard": 0.143,
+   "rankRaw": 3,
+   "rankJac": 13
+  },
+  {
+   "label": "Biography + Drama",
+   "raw": 103,
+   "jaccard": 0.141,
+   "rankRaw": 4,
+   "rankJac": 14
+  },
+  {
+   "label": "Action + Adventure",
+   "raw": 83,
+   "jaccard": 0.275,
+   "rankRaw": 5,
+   "rankJac": 1
+  },
+  {
+   "label": "Drama + Thriller",
+   "raw": 83,
+   "jaccard": 0.107,
+   "rankRaw": 6,
+   "rankJac": 18
+  },
+  {
+   "label": "Action + Drama",
+   "raw": 77,
+   "jaccard": 0.092,
+   "rankRaw": 7,
+   "rankJac": 22
+  },
+  {
+   "label": "Adventure + Drama",
+   "raw": 65,
+   "jaccard": 0.076,
+   "rankRaw": 8,
+   "rankJac": 29
+  },
+  {
+   "label": "Drama + Mystery",
+   "raw": 65,
+   "jaccard": 0.086,
+   "rankRaw": 9,
+   "rankJac": 28
+  },
+  {
+   "label": "Action + Crime",
+   "raw": 55,
+   "jaccard": 0.16,
+   "rankRaw": 10,
+   "rankJac": 6
+  },
+  {
+   "label": "Adventure + Animation",
+   "raw": 52,
+   "jaccard": 0.23,
+   "rankRaw": 13,
+   "rankJac": 2
+  },
+  {
+   "label": "Comedy + Romance",
+   "raw": 48,
+   "jaccard": 0.155,
+   "rankRaw": 14,
+   "rankJac": 7
+  },
+  {
+   "label": "Crime + Thriller",
+   "raw": 46,
+   "jaccard": 0.153,
+   "rankRaw": 15,
+   "rankJac": 8
+  },
+  {
+   "label": "Mystery + Thriller",
+   "raw": 33,
+   "jaccard": 0.163,
+   "rankRaw": 19,
+   "rankJac": 5
+  },
+  {
+   "label": "Biography + History",
+   "raw": 28,
+   "jaccard": 0.204,
+   "rankRaw": 24,
+   "rankJac": 4
+  },
+  {
+   "label": "Family + Fantasy",
+   "raw": 16,
+   "jaccard": 0.151,
+   "rankRaw": 37,
+   "rankJac": 9
+  }
+ ],
+ "layouts": {
+  "raw": {
+   "points": [
+    {
+     "genre": "Drama",
+     "x": 0.4432,
+     "y": 0.4921
+    },
+    {
+     "genre": "Comedy",
+     "x": 0.3904,
+     "y": 0.4922
+    },
+    {
+     "genre": "Crime",
+     "x": 0.5339,
+     "y": 0.601
+    },
+    {
+     "genre": "Adventure",
+     "x": 0.2553,
+     "y": 0.5607
+    },
+    {
+     "genre": "Action",
+     "x": 0.3422,
+     "y": 0.6198
+    },
+    {
+     "genre": "Thriller",
+     "x": 0.5956,
+     "y": 0.5604
+    },
+    {
+     "genre": "Romance",
+     "x": 0.5385,
+     "y": 0.4001
+    },
+    {
+     "genre": "Biography",
+     "x": 0.471,
+     "y": 0.2703
+    },
+    {
+     "genre": "Mystery",
+     "x": 0.5498,
+     "y": 0.6977
+    },
+    {
+     "genre": "Animation",
+     "x": 0.1201,
+     "y": 0.6975
+    },
+    {
+     "genre": "Sci-Fi",
+     "x": 0.2298,
+     "y": 0.832
+    },
+    {
+     "genre": "Fantasy",
+     "x": 0.1458,
+     "y": 0.4552
+    },
+    {
+     "genre": "History",
+     "x": 0.0318,
+     "y": 0.3098
+    },
+    {
+     "genre": "Family",
+     "x": 0.3036,
+     "y": 0.3202
+    },
+    {
+     "genre": "War",
+     "x": 0,
+     "y": 0.5299
+    },
+    {
+     "genre": "Music",
+     "x": 0.5702,
+     "y": 0.1394
+    },
+    {
+     "genre": "Horror",
+     "x": 0.6795,
+     "y": 0.8622
+    },
+    {
+     "genre": "Western",
+     "x": 0.1884,
+     "y": 0
+    },
+    {
+     "genre": "Film-Noir",
+     "x": 0.8736,
+     "y": 0.2921
+    },
+    {
+     "genre": "Sport",
+     "x": 0.9466,
+     "y": 0.5976
+    },
+    {
+     "genre": "Musical",
+     "x": 0.3907,
+     "y": 1
+    }
+   ],
+   "meanNearest": 0.1637
+  },
+  "jaccard": {
+   "points": [
+    {
+     "genre": "Drama",
+     "x": 0.5994,
+     "y": 0.4168
+    },
+    {
+     "genre": "Comedy",
+     "x": 0.441,
+     "y": 0.4143
+    },
+    {
+     "genre": "Crime",
+     "x": 0.6927,
+     "y": 0.5181
+    },
+    {
+     "genre": "Adventure",
+     "x": 0.4392,
+     "y": 0.554
+    },
+    {
+     "genre": "Action",
+     "x": 0.5278,
+     "y": 0.5899
+    },
+    {
+     "genre": "Thriller",
+     "x": 0.8015,
+     "y": 0.4874
+    },
+    {
+     "genre": "Romance",
+     "x": 0.5395,
+     "y": 0.2782
+    },
+    {
+     "genre": "Biography",
+     "x": 0.7011,
+     "y": 0.2608
+    },
+    {
+     "genre": "Mystery",
+     "x": 0.7939,
+     "y": 0.6421
+    },
+    {
+     "genre": "Animation",
+     "x": 0.3043,
+     "y": 0.5931
+    },
+    {
+     "genre": "Sci-Fi",
+     "x": 0.6502,
+     "y": 0.7262
+    },
+    {
+     "genre": "Fantasy",
+     "x": 0.3017,
+     "y": 0.4525
+    },
+    {
+     "genre": "History",
+     "x": 0.8074,
+     "y": 0.1612
+    },
+    {
+     "genre": "Family",
+     "x": 0.1973,
+     "y": 0.6138
+    },
+    {
+     "genre": "War",
+     "x": 0.3281,
+     "y": 0.1899
+    },
+    {
+     "genre": "Music",
+     "x": 0.6613,
+     "y": 0
+    },
+    {
+     "genre": "Horror",
+     "x": 1,
+     "y": 0.5779
+    },
+    {
+     "genre": "Western",
+     "x": 0,
+     "y": 0.2264
+    },
+    {
+     "genre": "Film-Noir",
+     "x": 0.864,
+     "y": 0.9574
+    },
+    {
+     "genre": "Sport",
+     "x": 0.3797,
+     "y": 0.9766
+    },
+    {
+     "genre": "Musical",
+     "x": 0.3556,
+     "y": 0.0043
+    }
+   ],
+   "meanNearest": 0.1733
+  }
+ },
+ "topRaw": [
+  {
+   "label": "Crime + Drama",
+   "v": 160
+  },
+  {
+   "label": "Comedy + Drama",
+   "v": 123
+  },
+  {
+   "label": "Drama + Romance",
+   "v": 106
+  },
+  {
+   "label": "Biography + Drama",
+   "v": 103
+  },
+  {
+   "label": "Action + Adventure",
+   "v": 83
+  },
+  {
+   "label": "Drama + Thriller",
+   "v": 83
+  }
+ ],
+ "topJac": [
+  {
+   "label": "Action + Adventure",
+   "v": 0.275
+  },
+  {
+   "label": "Adventure + Animation",
+   "v": 0.23
+  },
+  {
+   "label": "Crime + Drama",
+   "v": 0.207
+  },
+  {
+   "label": "Biography + History",
+   "v": 0.204
+  },
+  {
+   "label": "Mystery + Thriller",
+   "v": 0.163
+  },
+  {
+   "label": "Action + Crime",
+   "v": 0.16
+  }
+ ]
+}

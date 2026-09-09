@@ -1,0 +1,183 @@
+:root{
+  --ink: #100f0c;
+  --ink-2: #1b1914;
+  --paper: #f2ede0;
+  --paper-dim: #c9c2ae;
+  --line: #4a4636;
+  --line-soft: rgba(201,194,174,.28);
+}
+
+*{box-sizing:border-box;}
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--ink);
+  color:var(--paper);
+  font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+  overflow-x:hidden;
+}
+
+a{color:inherit;}
+
+header.masthead{
+  position:relative;
+  z-index:20;
+  padding:22px 24px 14px;
+  max-width:520px;
+}
+header.masthead h1{
+  margin:0;
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+header.masthead p.deck{
+  margin:6px 0 0;
+  font-size:12.5px;
+  color:var(--paper-dim);
+  font-style:italic;
+}
+
+main#field{
+  position:relative;
+  width:100%;
+  min-height:calc(100vh - 90px);
+}
+
+svg#connectors{
+  position:absolute;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  z-index:5;
+}
+svg#connectors line{
+  stroke:var(--paper);
+  stroke-width:.6;
+  opacity:.55;
+}
+
+.genre-tag{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  font:italic 12px/1 Georgia,"Times New Roman",serif;
+  color:var(--paper-dim);
+  letter-spacing:.02em;
+  opacity:.5;
+  pointer-events:none;
+  white-space:nowrap;
+  z-index:4;
+  text-align:center;
+}
+
+.node{
+  position:absolute;
+  z-index:10;
+}
+.node .poster{
+  display:block;
+  object-fit:cover;
+  border-radius:2px;
+  cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease;
+  outline:none;
+}
+.node .poster:hover,
+.node .poster:focus-visible{
+  transform:scale(2.6);
+  box-shadow:0 10px 28px rgba(0,0,0,.5);
+  z-index:100;
+  position:relative;
+}
+.node .poster:focus-visible{
+  box-shadow:0 0 0 1.5px var(--paper), 0 10px 28px rgba(0,0,0,.5);
+}
+
+.fallback-card{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  background:var(--ink-2);
+  color:var(--paper-dim);
+  border:1px solid var(--line);
+  border-radius:2px;
+  font-size:6.4px;
+  line-height:1.25;
+  padding:2px;
+  cursor:pointer;
+  transition:transform .15s ease;
+}
+.fallback-card:hover,
+.fallback-card:focus-visible{
+  transform:scale(2.6);
+  z-index:100;
+  position:relative;
+  box-shadow:0 10px 28px rgba(0,0,0,.5);
+}
+
+.reveal-label{
+  position:absolute;
+  z-index:120;
+  background:rgba(8,7,5,.95);
+  color:var(--paper);
+  border:1px solid var(--line);
+  padding:5px 8px;
+  font-size:11px;
+  line-height:1.4;
+  white-space:nowrap;
+  pointer-events:none;
+  display:none;
+}
+.reveal-label.visible{display:block;}
+
+footer.colophon{
+  position:relative;
+  z-index:20;
+  padding:14px 24px 26px;
+  font-size:11px;
+  color:var(--paper-dim);
+  opacity:.7;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .node .poster, .fallback-card{transition:none;}
+}
+
+/* Mobile: stacked genre bands (see script.js) instead of the circular constellation —
+   flex-wrap flow, not absolute positioning, so band height is always content-driven. */
+.band{
+  position:relative;
+  padding:18px 16px 6px;
+  border-top:1px solid var(--line-soft);
+}
+.band:first-child{border-top:none;}
+.band-header{
+  font:italic 13px/1 Georgia,"Times New Roman",serif;
+  color:var(--paper-dim);
+  letter-spacing:.02em;
+  margin-bottom:10px;
+}
+.band-flow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.band-flow .poster,
+.band-flow .fallback-card{
+  flex:0 0 auto;
+}
+.band-flow .poster:hover,
+.band-flow .poster:focus-visible,
+.band-flow .fallback-card:hover,
+.band-flow .fallback-card:focus-visible{
+  transform:scale(2.2);
+}
+
+@media (max-width: 640px){
+  header.masthead{padding:18px 16px 10px;}
+  header.masthead h1{font-size:13px;}
+  footer.colophon{padding:14px 16px 30px;}
+}

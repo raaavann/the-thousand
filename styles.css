@@ -1,0 +1,932 @@
+/* ============================================================================
+   THE THOUSAND
+   ----------------------------------------------------------------------------
+   COLOUR is graded, not picked. Cinema grades shadows cool and highlights warm;
+   this does the same, so the ground is a blue-black and every light on it is a
+   warm cream. That is also why the accent is champagne rather than a saturated
+   hue — gold is what warm highlights become when you push them.
+
+   Every text tone below is measured against --deep. The ramp is:
+
+     --cream    #f4efe6   17.09:1   primary
+     --cream-2  #c6bfb2   10.71:1   secondary
+     --cream-3  #8e8879    5.54:1   tertiary — still AA for body text
+     --gold     #cba76c    8.65:1   accent, safe for text
+     --edge     #5a5750    2.72:1   HAIRLINES ONLY — never carries text
+
+   The previous build used its faintest tone for decade labels, counts and the
+   genre rail, all of which sat near 2:1 and were the "text I can't read". The
+   fix is structural: --edge is quarantined, and nothing that must be read is
+   allowed to use it.
+
+   TYPE is two families, and hierarchy comes from size, weight and tracking
+   rather than a third face.
+     Jost                   the wordmark, and nothing else
+     Libre Caslon Display   film titles, section heads, numerals of consequence
+     Archivo                everything else; labels are uppercase + tracked
+   ========================================================================== */
+
+:root{
+  /* ground — cool shadows */
+  --void:    #07080b;
+  --deep:    #0a0c10;
+  --raise:   #10131a;
+  --raise-2: #161a23;
+
+  /* light — warm highlights */
+  --cream:   #f4efe6;
+  --cream-2: #c6bfb2;
+  --cream-3: #8e8879;
+
+  /* accent */
+  --gold:    #cba76c;
+  --gold-2:  #a8874f;
+
+  /* hairlines only */
+  --edge:    #5a5750;
+  --rule:    rgba(244,239,230,.12);
+  --rule-2:  rgba(244,239,230,.06);
+  --rule-3:  rgba(244,239,230,.28);
+
+  /* grid — 12 columns, one gutter, one margin */
+  --cols:    12;
+  --gutter:  clamp(14px, 1.5vw, 26px);
+  --margin:  clamp(20px, 4.6vw, 84px);
+  --page:    1560px;
+
+  /* type scale — 1.26 ratio, fluid at the display end only */
+  --t-xs:   11.5px;
+  --t-sm:   13px;
+  --t-base: 15.5px;
+  --t-md:   17.5px;
+  --t-lg:   clamp(20px, 1.7vw, 24px);
+  --t-xl:   clamp(26px, 2.6vw, 38px);
+  --t-2xl:  clamp(44px, 7.6vw, 116px);
+
+  --ease:    cubic-bezier(.22,.68,.24,1);
+  --slow:    .55s;
+
+  color-scheme: dark;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+[hidden]{ display:none !important; }
+
+body{
+  margin:0;
+  background:var(--void);
+  color:var(--cream);
+  font-family:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:var(--t-base);
+  font-weight:350;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+
+/* ── The grid ───────────────────────────────────────────────────────────────
+   One declaration, used by every band on the page. Children take named column
+   spans; nothing is positioned by ad-hoc padding, which is what keeps the left
+   edges of the masthead, the controls, the sky and the colophon on one line. */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(var(--cols), minmax(0,1fr));
+  gap:var(--gutter);
+  max-width:var(--page);
+  margin-inline:auto;
+  padding-inline:var(--margin);
+}
+
+/* ── Utility ─────────────────────────────────────────────────────────────── */
+.vh{
+  position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0;
+  clip-path:inset(50%); overflow:hidden; white-space:nowrap;
+}
+.lbl{
+  font-size:var(--t-xs);
+  font-weight:500;
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  color:var(--cream-3);
+}
+.lbl--dim{ color:var(--cream-3); opacity:.72; }
+.num{ font-variant-numeric:tabular-nums lining-nums; }
+
+.skip{
+  position:absolute; left:var(--margin); top:-3em; z-index:200;
+  background:var(--raise); color:var(--cream);
+  padding:10px 16px; border:1px solid var(--rule-3);
+  font-size:var(--t-sm);
+  transition:top .2s var(--ease);
+}
+.skip:focus{ top:14px; }
+
+:focus-visible{ outline:1.5px solid var(--gold); outline-offset:3px; }
+
+.key{
+  display:inline-block;
+  min-width:1.5em; padding:1px 5px;
+  border:1px solid var(--rule); border-radius:2px;
+  font-size:.82em; text-align:center;
+  color:var(--cream-2);
+  font-variant-numeric:tabular-nums;
+}
+
+/* ============================================================================
+   Masthead
+   ========================================================================== */
+
+.masthead{
+  padding-block:clamp(38px,5.4vw,80px) clamp(26px,3.2vw,44px);
+}
+.masthead__inner{
+  grid-column:2 / span 10;
+  display:grid;
+  justify-items:center;
+  text-align:center;
+  gap:clamp(20px,2.4vw,32px);
+}
+
+/* ── The wordmark ──────────────────────────────────────────────────────────
+   One line, two objects: the name set in a geometric sans, and the source badge
+   beside it at cap height. The geometry is what makes it read as a mark rather
+   than a heading. Jost is a Futura descendant, so the O and the S are drawn from
+   circles, and at this size with open tracking it holds the line against a very
+   solid yellow rectangle without either half winning. */
+.logo{
+  margin:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(12px,1.3vw,20px);
+  flex-wrap:wrap;
+}
+.logo__word{
+  font-family:"Jost","Futura","Century Gothic",sans-serif;
+  font-weight:500;
+  font-size:clamp(30px,4.6vw,64px);
+  line-height:1;
+  letter-spacing:.055em;
+  text-transform:uppercase;
+  color:var(--cream);
+  text-indent:.055em;              /* optical: cancels the trailing letter-space */
+  white-space:nowrap;
+}
+.logo__imdb{
+  height:.56em;                    /* scales with the wordmark, always cap-height */
+  width:auto;
+  display:block;
+  font-size:clamp(30px,4.6vw,64px);
+  flex:none;
+}
+
+/* Right of the wordmark: the standfirst. Restored after the wordmark rewrite
+   accidentally took these with it. */
+.masthead__deck{
+  margin:0;
+  max-width:54ch;
+  font-family:"Libre Caslon Text",Georgia,serif;
+  font-size:var(--t-md);
+  line-height:1.62;
+  color:var(--cream-2);
+  text-wrap:pretty;
+}
+.masthead__deck em{ color:var(--cream); font-style:italic; }
+
+/* Standing figures. A specification block, not a KPI row: hairline rules, no
+   cards, the numbers set in the display face so they read as type. */
+.figures{
+  margin:0;
+  width:min(100%,660px);
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:var(--gutter);
+  border-top:1px solid var(--rule);
+  padding-top:18px;
+}
+.figures div{ min-width:0; }
+.figures dt{
+  font-size:var(--t-xs); font-weight:500; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--cream-3);
+  margin-bottom:6px;
+}
+.figures dd{
+  margin:0;
+  font-family:"Libre Caslon Display",Georgia,serif;
+  font-size:clamp(20px,1.7vw,25px);
+  line-height:1.1;
+  letter-spacing:-.01em;
+  color:var(--cream);
+  font-variant-numeric:lining-nums tabular-nums;
+}
+
+/* ============================================================================
+   Controls — sticky, quiet, and always one row on desktop
+   ========================================================================== */
+
+.controls{
+  position:sticky; top:0; z-index:60;
+  background:var(--void);
+  border-block:1px solid var(--rule);
+}
+.controls__bar{ padding-block:13px; align-items:center; }
+.controls__left{
+  grid-column:1 / span 6;
+  display:flex; align-items:center; gap:clamp(16px,2vw,32px);
+  min-width:0;
+}
+.controls__right{
+  grid-column:8 / span 5;
+  display:flex; align-items:center; gap:clamp(14px,1.6vw,26px);
+  min-width:0;
+}
+
+/* Segmented control. Underline marks the active item — no filled pill, which
+   would read as a button rather than a state. */
+.seg{ display:flex; align-items:center; gap:clamp(10px,1.2vw,18px); }
+.seg__label{
+  font-size:var(--t-xs); font-weight:500; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--cream-3); white-space:nowrap;
+}
+.seg__set{ display:flex; gap:clamp(10px,1.2vw,18px); }
+.seg button{
+  background:none; border:0; padding:3px 0 5px; cursor:pointer;
+  font:inherit; font-size:var(--t-sm); font-weight:400;
+  letter-spacing:.01em;
+  color:var(--cream-3);
+  border-bottom:1.5px solid transparent;
+  white-space:nowrap;
+  transition:color .22s var(--ease), border-color .22s var(--ease);
+}
+.seg button:hover{ color:var(--cream); }
+.seg button[aria-pressed="true"]{ color:var(--cream); border-bottom-color:var(--gold); }
+.seg--quiet button[aria-pressed="true"]{ color:var(--cream-2); }
+
+.search{
+  flex:1 1 auto; min-width:0;
+  display:flex; align-items:center; gap:9px;
+  border-bottom:1px solid var(--rule);
+  padding-bottom:6px;
+  transition:border-color .22s var(--ease);
+}
+.search:focus-within{ border-bottom-color:var(--gold); }
+.search svg{ flex:none; color:var(--cream-3); }
+.search input{
+  flex:1; min-width:0; background:none; border:0; outline:none; padding:0;
+  color:var(--cream); font:inherit; font-size:var(--t-sm);
+  appearance:none; -webkit-appearance:none;
+}
+.search input::placeholder{ color:var(--cream-3); }
+.search input::-webkit-search-cancel-button{ -webkit-appearance:none; }
+.search button{
+  background:none; border:0; cursor:pointer; padding:0 2px;
+  color:var(--cream-3); font-size:17px; line-height:1;
+}
+.search button:hover{ color:var(--cream); }
+
+.count{
+  margin:0; white-space:nowrap;
+  display:flex; align-items:baseline; gap:9px;
+  font-size:var(--t-sm); color:var(--cream-3);
+}
+.count b{
+  font-family:"Libre Caslon Display",Georgia,serif;
+  font-weight:400; font-size:var(--t-lg); color:var(--cream);
+  font-variant-numeric:lining-nums tabular-nums;
+}
+.count button{
+  background:none; border:0; padding:0; cursor:pointer;
+  font:inherit; font-size:var(--t-sm); color:var(--gold);
+  border-bottom:1px solid transparent;
+}
+.count button:hover{ border-bottom-color:var(--gold); }
+
+/* Genre rail — the precise counterpart to the labels in the sky. Hovering one
+   lights that genre's films, so the rail is a way of reading the field, not a
+   separate control panel. */
+.rail{ border-top:1px solid var(--rule-2); overflow:hidden; }
+.rail__set{
+  display:flex !important;
+  gap:clamp(12px,1.5vw,24px);
+  padding-block:11px;
+  overflow-x:auto;
+  scrollbar-width:none;
+  mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 60px),transparent);
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 60px),transparent);
+}
+.rail__set::-webkit-scrollbar{ display:none; }
+.rail button{
+  background:none; border:0; padding:2px 0 3px; cursor:pointer;
+  font:inherit; font-size:var(--t-xs); font-weight:500;
+  letter-spacing:.13em; text-transform:uppercase;
+  color:var(--cream-3);
+  white-space:nowrap;
+  border-bottom:1.5px solid transparent;
+  transition:color .2s var(--ease), border-color .2s var(--ease);
+}
+.rail button sup{
+  font-size:9px; letter-spacing:.02em; margin-left:3px;
+  color:var(--cream-3); opacity:.75; vertical-align:super;
+  font-variant-numeric:tabular-nums;
+}
+.rail button:hover{ color:var(--cream); }
+.rail button[aria-pressed="true"]{ color:var(--gold); border-bottom-color:var(--gold); }
+.rail button[aria-pressed="true"] sup{ color:var(--gold); opacity:.8; }
+
+/* ============================================================================
+   The constellation
+   ========================================================================== */
+
+/* The field is a framed object sitting on the grid, not a full-bleed band. The
+   margins either side are deliberate: they are page, and they scroll, so there is
+   always somewhere to put the pointer that is not the map. */
+.sky{ position:relative; padding-block:clamp(14px,1.6vw,26px) 0; }
+
+.sky__stage{
+  position:relative;
+  grid-column:1 / -1;
+  width:100%;
+  height:clamp(470px,70vh,840px);
+  overflow:hidden;
+  border:1px solid var(--rule);
+  background:
+    radial-gradient(115% 78% at 50% 44%, rgba(203,167,108,.05), transparent 66%),
+    radial-gradient(70% 55% at 16% 12%, rgba(198,191,178,.028), transparent 72%),
+    var(--deep);
+}
+/* A vignette pulls the eye to the middle of the field and stops the canvas
+   ending on a hard edge against the page. */
+.sky__stage::after{
+  content:"";
+  position:absolute; inset:0; z-index:3;
+  pointer-events:none;
+  background:radial-gradient(120% 96% at 50% 50%, transparent 52%, rgba(7,8,11,.72) 100%);
+}
+
+#sky-canvas{
+  display:block; width:100%; height:100%;
+  outline:none;
+  cursor:default;
+  touch-action:pan-y;      /* JS switches to none once zoomed; see setTouchAction */
+  transition:opacity .4s var(--ease);
+}
+#sky-canvas:focus-visible{ outline:1.5px solid var(--gold); outline-offset:-4px; }
+
+/* Genre labels. The canvas paints a soft scrim behind each of these before the
+   stars go down, which is what keeps them readable over the bright core — the
+   previous build let them wash out entirely. */
+.sky__labels{ position:absolute; inset:0; z-index:4; pointer-events:none; }
+/* Positioned by JS every frame, because the anchors move with the lens and the
+   relaxation has to re-solve. transform is therefore NOT transitioned, or each
+   frame would fight the last one. */
+.sky__label{
+  position:absolute; left:0; top:0;
+  transform:translate(-9999px,-9999px);
+  will-change:transform;
+  pointer-events:auto;
+  background:none; border:0; padding:5px 8px; cursor:pointer;
+  font-family:"Libre Caslon Text",Georgia,serif;
+  font-size:clamp(12.5px,1.02vw,15px);
+  font-style:italic;
+  line-height:1;
+  color:var(--cream-2);
+  white-space:nowrap;
+  transition:color .22s var(--ease);
+}
+.sky__label:hover{ color:var(--cream); }
+.sky__label[data-on="true"]{ color:var(--gold); }
+.sky__label[data-muted="true"]{ color:var(--cream-3); opacity:.45; }
+
+.sky__tip{
+  position:absolute; top:0; left:0; z-index:6;
+  pointer-events:none;
+  width:252px;
+  display:grid; grid-template-columns:52px 1fr; gap:12px;
+  padding:11px 13px 12px;
+  background:rgba(10,12,16,.93);
+  border:1px solid var(--rule-3);
+  box-shadow:0 20px 44px -18px rgba(0,0,0,.95);
+  will-change:transform;
+}
+.sky__tip img{
+  width:52px; height:78px; object-fit:cover; display:block;
+  background:var(--raise-2);
+}
+.sky__tip-b{ min-width:0; align-self:center; }
+.sky__tip b{
+  display:block;
+  font-family:"Libre Caslon Display",Georgia,serif;
+  font-weight:400; font-size:16px; line-height:1.16;
+  color:var(--cream); margin-bottom:6px;
+  overflow-wrap:anywhere;
+}
+.sky__tip span{
+  display:block; font-size:var(--t-xs); letter-spacing:.06em;
+  color:var(--cream-3); font-variant-numeric:tabular-nums;
+}
+.sky__tip .g{ margin-top:4px; letter-spacing:.1em; text-transform:uppercase; }
+.sky__tip .r{ color:var(--gold); }
+
+/* Size key — the one piece of chrome that earns its place, because "bigger and
+   nearer means better rated" is the whole encoding and nothing else states it. */
+.sky__key{
+  position:absolute; left:20px; bottom:18px; z-index:5;
+  display:flex; align-items:center; gap:14px;
+  pointer-events:none;
+}
+.sky__key-title{
+  font-size:var(--t-xs); font-weight:500; letter-spacing:.15em;
+  text-transform:uppercase; color:var(--cream-3);
+}
+.sky__key-row{ display:flex; align-items:center; gap:16px; }
+.sky__key-item{ display:flex; align-items:center; gap:7px; }
+.sky__key-dot{ border-radius:50%; background:var(--cream); display:block; }
+.sky__key-item span{
+  font-size:var(--t-xs); color:var(--cream-3);
+  font-variant-numeric:tabular-nums;
+}
+
+.sky__empty{
+  position:absolute; inset:0; z-index:7;
+  display:grid; place-content:center; justify-items:center; gap:18px;
+  background:rgba(7,8,11,.8);
+  text-align:center;
+}
+.sky__empty p{
+  margin:0;
+  font-family:"Libre Caslon Display",Georgia,serif;
+  font-size:var(--t-xl); color:var(--cream-2);
+}
+.sky__empty button{
+  background:none; border:1px solid var(--gold); border-radius:2px;
+  padding:9px 18px; cursor:pointer;
+  font:inherit; font-size:var(--t-sm); letter-spacing:.08em;
+  text-transform:uppercase; color:var(--gold);
+  transition:background .22s var(--ease), color .22s var(--ease);
+}
+.sky__empty button:hover{ background:var(--gold); color:var(--void); }
+
+/* ── Below the sky: the decade filter and the caveat, on the same grid ───── */
+
+.sky__foot{
+  padding-block:24px 34px;
+  align-items:start;
+  border-bottom:1px solid var(--rule);
+}
+.decades{ grid-column:1 / span 7; }
+.decades__head{
+  display:flex; justify-content:space-between; align-items:baseline;
+  gap:16px; margin-bottom:14px;
+}
+.decades__bars{
+  display:flex; align-items:stretch; gap:clamp(3px,.5vw,8px);
+  height:66px;
+}
+.decade{
+  flex:1 1 0; min-width:0;
+  display:flex; flex-direction:column; gap:7px;
+  background:none; border:0; padding:0; cursor:pointer;
+  font:inherit; color:inherit;
+  -webkit-tap-highlight-color:transparent;
+}
+.decade__track{ flex:1; position:relative; min-height:0; }
+.decade__bar{
+  position:absolute; left:0; right:0; bottom:0;
+  height:var(--h); min-height:2px;
+  background:var(--edge);
+  transition:background .24s var(--ease);
+}
+.decade__foot{
+  border-top:1px solid var(--rule-2);
+  padding-top:6px;
+  display:block;
+  font-size:10.5px; letter-spacing:.03em;
+  color:var(--cream-3);
+  font-variant-numeric:tabular-nums;
+  overflow:hidden; text-overflow:clip; white-space:nowrap;
+}
+.decade:hover .decade__bar{ background:var(--cream-2); }
+.decade:hover .decade__foot{ color:var(--cream); border-color:var(--rule-3); }
+.decade[aria-pressed="true"] .decade__bar{ background:var(--gold); }
+.decade[aria-pressed="true"] .decade__foot{ color:var(--gold); border-color:var(--gold); }
+
+.sky__note{
+  grid-column:9 / span 4;
+  margin:0;
+  font-family:"Libre Caslon Text",Georgia,serif;
+  font-size:var(--t-sm);
+  line-height:1.65;
+  color:var(--cream-3);
+  text-wrap:pretty;
+}
+.sky__note em{ color:var(--cream-2); font-style:italic; }
+.sky__note b{ color:var(--cream-2); font-weight:400; font-style:italic; }
+
+/* ============================================================================
+   The wall
+   ========================================================================== */
+
+.wall{ padding-block:clamp(26px,3.4vw,48px) 40px; }
+.wall > *{ grid-column:1 / -1; }
+
+.section{
+  margin-bottom:clamp(34px,4.4vw,64px);
+  content-visibility:auto;
+  contain-intrinsic-size:auto 700px;
+}
+.section__head{
+  display:flex; align-items:baseline; gap:18px;
+  border-top:1px solid var(--rule);
+  padding-top:13px; padding-bottom:9px;
+  margin-bottom:20px;
+  position:sticky; top:var(--stick,104px);
+  background:linear-gradient(var(--void) 74%, transparent);
+  z-index:20;
+}
+.section__title{
+  margin:0;
+  font-family:"Libre Caslon Display",Georgia,serif;
+  font-weight:400; font-size:var(--t-xl); line-height:1;
+  letter-spacing:-.012em; white-space:nowrap;
+  color:var(--cream);
+}
+.section__note{
+  font-family:"Libre Caslon Text",Georgia,serif;
+  font-style:italic; font-size:var(--t-sm); color:var(--cream-3);
+  min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.section__count{
+  margin-left:auto; white-space:nowrap;
+  font-size:var(--t-xs); letter-spacing:.13em; color:var(--cream-3);
+  font-variant-numeric:tabular-nums;
+}
+
+.tiles{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(clamp(92px,7.8vw,128px),1fr));
+  gap:clamp(10px,1.05vw,17px);
+}
+
+.tile{
+  position:relative; aspect-ratio:2/3;
+  background:var(--raise);
+  border:0; padding:0; margin:0; display:block;
+  overflow:hidden; cursor:pointer;
+  font:inherit; color:inherit; text-align:left;
+  isolation:isolate;
+  transition:transform .34s var(--ease), box-shadow .34s var(--ease);
+  -webkit-tap-highlight-color:transparent;
+}
+.tile::after{
+  content:""; position:absolute; inset:0; z-index:3; pointer-events:none;
+  border:1px solid var(--rule-2);
+  transition:border-color .3s var(--ease);
+}
+.tile img{
+  width:100%; height:100%; object-fit:cover; display:block;
+  position:relative; z-index:1;
+  opacity:0; transform:scale(1.015);
+  filter:saturate(.92) contrast(1.02) brightness(.95);
+  transition:opacity .6s var(--ease), transform .6s var(--ease), filter .3s var(--ease);
+}
+.tile.is-loaded img{ opacity:1; transform:none; }
+.tile:hover,.tile:focus-visible{
+  transform:translateY(-5px);
+  box-shadow:0 18px 36px -12px rgba(0,0,0,.8);
+  z-index:5;
+}
+.tile:hover img,.tile:focus-visible img{ filter:saturate(1.04) contrast(1) brightness(1.05); }
+.tile:hover::after,.tile:focus-visible::after{ border-color:var(--rule-3); }
+.tile[aria-current="true"]::after{ border-color:var(--gold); border-width:1.5px; }
+
+.tile__fallback{
+  position:absolute; inset:0; z-index:0;
+  display:flex; align-items:flex-end; padding:9px;
+  background:linear-gradient(160deg,var(--raise-2),var(--deep));
+  font-family:"Libre Caslon Text",Georgia,serif;
+  font-size:12px; line-height:1.22; color:var(--cream-2);
+}
+.tile__cap{
+  position:absolute; inset:auto 0 0 0; z-index:2;
+  padding:24px 9px 10px;
+  background:linear-gradient(transparent,rgba(5,6,8,.86) 44%,rgba(5,6,8,.96));
+  opacity:0; transform:translateY(6px);
+  transition:opacity .26s var(--ease), transform .26s var(--ease);
+}
+.tile:hover .tile__cap,.tile:focus-visible .tile__cap{ opacity:1; transform:none; }
+.tile__cap b{
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;
+  overflow:hidden;
+  font-family:"Libre Caslon Display",Georgia,serif;
+  font-weight:400; font-size:12.5px; line-height:1.2; color:var(--cream);
+}
+.tile__cap span{
+  display:block; margin-top:4px;
+  font-size:10px; letter-spacing:.09em; color:var(--cream-3);
+  font-variant-numeric:tabular-nums;
+}
+.tile__rating{
+  position:absolute; left:0; bottom:0; z-index:4;
+  height:2px; width:var(--w);
+  background:var(--gold); opacity:.9;
+  transition:opacity .3s var(--ease), height .3s var(--ease);
+}
+.tile:hover .tile__rating{ opacity:1; height:2.5px; }
+.tile__rank{
+  position:absolute; top:0; right:0; z-index:4;
+  padding:4px 7px;
+  background:rgba(5,6,8,.78);
+  font-size:9.5px; letter-spacing:.05em; color:var(--cream);
+  font-variant-numeric:tabular-nums;
+  opacity:0; transition:opacity .26s var(--ease);
+}
+.tile:hover .tile__rank,.tile:focus-visible .tile__rank{ opacity:1; }
+
+.empty{
+  padding:clamp(56px,10vw,120px) 0; text-align:center;
+  border-top:1px solid var(--rule);
+}
+.empty p{
+  margin:0 0 18px;
+  font-family:"Libre Caslon Display",Georgia,serif;
+  font-size:var(--t-xl); color:var(--cream-2);
+}
+.empty button{
+  background:none; border:1px solid var(--gold); border-radius:2px;
+  padding:9px 18px; cursor:pointer;
+  font:inherit; font-size:var(--t-sm); letter-spacing:.08em;
+  text-transform:uppercase; color:var(--gold);
+}
+.empty button:hover{ background:var(--gold); color:var(--void); }
+
+/* ============================================================================
+   Record panel
+   ========================================================================== */
+
+.scrim{
+  position:fixed; inset:0; z-index:90;
+  background:rgba(5,6,8,.66);
+  opacity:0; pointer-events:none;
+  transition:opacity .36s var(--ease);
+}
+.scrim.is-open{ opacity:1; pointer-events:auto; }
+
+.plate{
+  position:fixed; top:0; right:0; bottom:0; z-index:100;
+  width:clamp(340px,31vw,470px); max-width:100vw;
+  background:var(--deep);
+  border-left:1px solid var(--rule);
+  box-shadow:-34px 0 76px -24px rgba(0,0,0,.86);
+  transform:translateX(101%);
+  transition:transform var(--slow) var(--ease);
+  display:flex; flex-direction:column;
+  overscroll-behavior:contain;
+}
+.plate.is-open{ transform:none; }
+
+.plate__bar{
+  flex:none; display:flex; align-items:center; gap:9px;
+  padding:14px 20px; border-bottom:1px solid var(--rule);
+}
+.plate__no{
+  margin-right:auto;
+  font-size:var(--t-xs); letter-spacing:.16em; color:var(--cream-3);
+  font-variant-numeric:tabular-nums;
+}
+.plate__bar button{
+  width:30px; height:30px; display:grid; place-items:center;
+  background:none; border:1px solid var(--rule); border-radius:2px;
+  color:var(--cream-2); cursor:pointer;
+  transition:border-color .2s var(--ease), color .2s var(--ease);
+}
+.plate__bar button:hover:not(:disabled){ border-color:var(--gold); color:var(--gold); }
+.plate__bar button:disabled{ opacity:.28; cursor:default; }
+
+.plate__body{
+  flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain;
+  padding:0 clamp(20px,2.1vw,30px) 48px;
+}
+.plate__body::-webkit-scrollbar{ width:10px; }
+.plate__body::-webkit-scrollbar-thumb{
+  background:var(--edge); border:3px solid var(--deep);
+}
+
+.plate__poster{
+  position:relative; margin:22px 0 26px;
+  aspect-ratio:2/3; background:var(--raise);
+  overflow:hidden;
+  box-shadow:0 26px 52px -20px rgba(0,0,0,.92);
+}
+.plate__poster img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.plate h2{
+  margin:0 0 12px;
+  font-family:"Libre Caslon Display",Georgia,serif;
+  font-weight:400; font-size:clamp(27px,2.4vw,36px);
+  line-height:1.06; letter-spacing:-.015em;
+  color:var(--cream); text-wrap:balance;
+}
+
+.plate__facts{
+  display:flex; flex-wrap:wrap; gap:7px 9px; align-items:center;
+  margin:0; padding-bottom:20px; border-bottom:1px solid var(--rule);
+  font-size:var(--t-xs); letter-spacing:.13em; text-transform:uppercase;
+  color:var(--cream-3);
+  font-variant-numeric:tabular-nums;
+}
+.plate__facts span:not(:last-child)::after{
+  content:"·"; margin-left:9px; color:var(--edge);
+}
+
+.score{
+  display:flex; align-items:flex-end; gap:16px;
+  padding:22px 0; border-bottom:1px solid var(--rule);
+}
+.score__big{
+  font-family:"Libre Caslon Display",Georgia,serif;
+  font-size:56px; line-height:.84; letter-spacing:-.028em;
+  color:var(--cream);
+  font-variant-numeric:lining-nums tabular-nums;
+}
+.score__meta{ flex:1; min-width:0; padding-bottom:4px; }
+.score__meta .lbl{ display:block; margin-bottom:9px; }
+.score__track{ height:2px; background:var(--rule); position:relative; }
+.score__track i{ position:absolute; inset:0 auto 0 0; width:var(--w); background:var(--gold); }
+.score__scale{
+  display:flex; justify-content:space-between; margin-top:6px;
+  font-size:10px; letter-spacing:.08em; color:var(--cream-3);
+  font-variant-numeric:tabular-nums;
+}
+
+.plate__quote{
+  margin:24px 0;
+  font-family:"Libre Caslon Text",Georgia,serif;
+  font-size:var(--t-md); line-height:1.55; font-style:italic;
+  color:var(--cream); text-wrap:pretty;
+}
+.plate__quote::before{
+  content:""; display:block; width:36px; height:1px;
+  background:var(--gold); margin-bottom:18px;
+}
+
+.plate__rows{ display:grid; margin:0; }
+.row{
+  display:grid; grid-template-columns:88px 1fr; gap:14px;
+  padding:13px 0; border-top:1px solid var(--rule-2);
+  align-items:baseline;
+}
+.row dt{
+  font-size:var(--t-xs); font-weight:500; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--cream-3); padding-top:2px;
+}
+.row dd{ margin:0; font-size:var(--t-sm); line-height:1.45; color:var(--cream-2); }
+.row dd b{ color:var(--cream); font-weight:500; }
+
+.linkish{
+  background:none; border:0; padding:0; cursor:pointer;
+  font:inherit; color:var(--cream);
+  border-bottom:1px solid var(--rule-3);
+  transition:color .2s var(--ease), border-color .2s var(--ease);
+}
+.linkish:hover{ color:var(--gold); border-bottom-color:var(--gold); }
+.taglist{ display:flex; flex-wrap:wrap; gap:6px 8px; align-items:baseline; }
+.taglist i{ color:var(--edge); font-style:normal; }
+
+/* ============================================================================
+   Colophon
+   ========================================================================== */
+
+.colophon{
+  border-top:1px solid var(--rule);
+  padding-block:34px 62px;
+}
+.colophon__cell{ grid-column:span 3; }
+.colophon h3{
+  margin:0 0 9px;
+  font-size:10.5px; font-weight:500; letter-spacing:.15em;
+  text-transform:uppercase; color:var(--cream-3); opacity:.8;
+}
+.colophon p{
+  margin:0; font-size:12.5px; line-height:1.62; color:var(--cream-3);
+  max-width:38ch;
+}
+.colophon code{
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:.9em; color:var(--gold);
+}
+
+/* ============================================================================
+   Responsive — the grid collapses 12 → 8 → 4
+   ========================================================================== */
+
+@media (max-width:1080px){
+  .masthead__inner{ grid-column:1 / span 12; }
+  .controls__left{ grid-column:1 / span 12; }
+  .controls__right{ grid-column:1 / span 12; }
+  .controls__bar{ row-gap:12px; }
+  .decades{ grid-column:1 / span 12; }
+  .sky__note{ grid-column:1 / span 12; margin-top:22px; }
+  .colophon__cell{ grid-column:span 6; }
+}
+
+@media (max-width:680px){
+  :root{ --cols:4; }
+  .masthead{ padding-block:32px 24px; }
+  .masthead__inner,
+  .controls__left,.controls__right,
+  .decades,.sky__note{ grid-column:1 / span 4; }
+  .figures{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px var(--gutter); }
+  .colophon__cell{ grid-column:span 4; }
+
+  .controls__left{ flex-wrap:wrap; gap:12px 18px; }
+  .sky__stage{ height:clamp(420px,64vh,600px); }
+  .sky__key{ left:12px; bottom:12px; gap:10px; }
+  .sky__key-row{ gap:11px; }
+  .sky__label{ font-size:11.5px; padding:4px 5px; }
+  .sky__tip{ width:216px; grid-template-columns:44px 1fr; }
+  .sky__tip img{ width:44px; height:66px; }
+  .decades__bars{ height:50px; gap:2px; }
+  .decade__foot b{ display:none; }
+  .decade__foot{ font-size:9px; justify-content:flex-start; }
+
+  .tiles{ grid-template-columns:repeat(auto-fill,minmax(86px,1fr)); gap:8px; }
+  .section__note{ display:none; }
+
+  /* On a phone the drawer becomes a sheet — a side panel leaves no room for the
+     poster it exists to show. */
+  .plate{
+    width:100vw; top:auto; height:92dvh;
+    border-left:0; border-top:1px solid var(--rule);
+    border-radius:12px 12px 0 0;
+    transform:translateY(101%);
+  }
+  .plate.is-open{ transform:none; }
+  .plate__poster{ max-width:214px; margin-inline:auto; }
+  .score__big{ font-size:46px; }
+  body.plate-open{ overflow:hidden; }
+}
+
+@media (min-width:681px){ .scrim{ display:none; } }
+
+@media (prefers-reduced-motion:reduce){
+  html{ scroll-behavior:auto; }
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    transition-duration:.001ms !important;
+  }
+  .tile img{ opacity:1; transform:none; }
+}
+
+/* Rail item mirrored from a label hover in the sky. Not the committed state —
+   that is [aria-pressed], and this must not be mistaken for it. */
+.rail button.is-preview{ color:var(--cream); }
+
+/* The genre-hover lens is the most useful thing in the piece and the least
+   discoverable, since nothing about a label suggests it does anything. One line
+   beside the key fixes that; it is the only instruction on the page, and it goes
+   where the eye already is. */
+.sky__hint{
+  font-size:var(--t-xs);
+  letter-spacing:.02em;
+  color:var(--cream-3);
+  border-left:1px solid var(--rule);
+  padding-left:14px;
+}
+@media (max-width:680px){ .sky__hint{ display:none; } }
+
+/* ── Zoom controls ─────────────────────────────────────────────────────────
+   Deliberately in the frame rather than hidden behind a gesture: scroll-to-zoom
+   is the fast path, but a control that only exists as a gesture is invisible to
+   anyone who does not already know it is there, and unusable without a wheel. */
+.sky__zoom{
+  position:absolute; right:18px; bottom:18px; z-index:5;
+  display:flex; align-items:center; gap:8px;
+}
+.sky__zoom button{
+  width:30px; height:30px;
+  display:grid; place-items:center;
+  background:rgba(10,12,16,.72);
+  border:1px solid var(--rule);
+  color:var(--cream-2);
+  font:inherit; font-size:15px; line-height:1;
+  cursor:pointer;
+  transition:border-color .2s var(--ease), color .2s var(--ease), background .2s var(--ease);
+}
+.sky__zoom button:hover:not(:disabled){ border-color:var(--gold); color:var(--gold); }
+.sky__zoom button:disabled{ opacity:.3; cursor:default; }
+.sky__zoom button[data-zoom="reset"]{
+  width:auto; padding:0 11px;
+  font-size:var(--t-xs); letter-spacing:.12em; text-transform:uppercase;
+}
+.sky__zoom-read{
+  min-width:38px; text-align:center;
+  font-size:var(--t-xs); letter-spacing:.08em;
+  color:var(--cream-3);
+}
+
+@media (max-width:680px){
+  .sky__zoom{ right:12px; bottom:12px; gap:6px; }
+  .sky__zoom-read{ display:none; }
+}

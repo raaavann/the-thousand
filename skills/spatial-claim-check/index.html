@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spatial Claim Check</title>
+<meta name="description" content="A data-visualisation skill that audits what position actually means in charts whose coordinates are computed rather than measured — and what happened when it was run on a genre constellation of 1,000 films.">
+<meta name="theme-color" content="#05090c">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2305090c'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%2358c8e0' stroke-width='2'/%3E%3Cpath d='M32 8v48M8 32h48' stroke='%23dce8ef' stroke-width='1.5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..700&family=IBM+Plex+Mono:wght@400;500&family=Libre+Franklin:ital,wght@0,300..700;1,300..500&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================================
+   Spatial Claim Check — a calibration plate
+   ----------------------------------------------------------------------------
+   Ground is cyanotype: the blueprint process was invented to reproduce measured
+   drawings faithfully, which is the subject of the page. Type is three families
+   doing three jobs, none of them geometric —
+
+     Bodoni Moda     Didone display. The letterform of engraved scientific
+                     atlases, and it carries an optical-size axis, so hairlines
+                     hold at small sizes instead of dropping out on dark ground.
+     Libre Franklin  Franklin Gothic revival. The newspaper grotesque that has
+                     been set beside Didones for a century.
+     IBM Plex Mono   Humanist mono. Figures, labels, verdicts, coordinates.
+   ========================================================================== */
+
+:root{
+  /* ground */
+  --abyss:   #05090c;
+  --plate:   #0a1015;
+  --plate-2: #0e161d;
+
+  /* marks */
+  --ink:     #dce8ef;
+  --ink-2:   #93a8b7;
+  --ink-3:   #5d7183;
+  --ink-4:   #38495a;
+
+  /* rules */
+  --rule:    rgba(173,201,219,.13);
+  --rule-2:  rgba(173,201,219,.065);
+  --rule-hi: rgba(173,201,219,.32);
+
+  /* signal + verdicts. Never the only channel: every verdict also carries a
+     glyph and a word, so the page survives any colour-vision deficiency and
+     a greyscale print. */
+  --cyan:  #58c8e0;
+  --pass:  #5fc9a8;
+  --weak:  #d9a95c;
+  --fail:  #e2786c;
+
+  /* measure — 8px base, 1.25 modular type scale */
+  --gut:   clamp(20px, 4vw, 60px);
+  --rail:  152px;
+  --page:  1240px;
+  --ease:  cubic-bezier(.2,.7,.3,1);
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+
+body{
+  margin:0;
+  background:var(--abyss);
+  color:var(--ink);
+  font-family:"Libre Franklin", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size:16px;
+  font-weight:350;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+
+/* A cyanotype wash — cool at the top, a faint warm-cyan bloom low down, so a
+   very long dark page is not one flat field. */
+body::before{
+  content:"";
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(130% 65% at 50% -8%, rgba(88,200,224,.075), transparent 62%),
+    radial-gradient(90% 50% at 82% 104%, rgba(88,200,224,.045), transparent 64%);
+}
+
+.wrap{ position:relative; z-index:1; max-width:var(--page); margin:0 auto; padding-inline:var(--gut); }
+
+/* --- utility -------------------------------------------------------------- */
+.mono{
+  font-family:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  font-size:11px; letter-spacing:.15em; text-transform:uppercase;
+  font-weight:400;
+}
+.tnum{ font-variant-numeric:tabular-nums lining-nums; }
+.sr-only{ position:absolute; width:1px; height:1px; margin:-1px; padding:0; border:0;
+  clip-path:inset(50%); overflow:hidden; white-space:nowrap; }
+[hidden]{ display:none !important; }
+:focus-visible{ outline:1.5px solid var(--cyan); outline-offset:3px; border-radius:1px; }
+
+.display{
+  font-family:"Bodoni Moda", "Didot", "Bodoni MT", Georgia, serif;
+  font-weight:400;
+  font-optical-sizing:auto;
+  letter-spacing:-.012em;
+}
+
+/* ============================================================================
+   Masthead
+   ========================================================================== */
+
+.masthead{ padding-block:clamp(46px,8vw,104px) clamp(30px,4vw,56px); }
+
+.masthead__eyebrow{
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px;
+  color:var(--ink-3); margin:0 0 clamp(22px,3vw,38px);
+}
+.masthead__eyebrow i{
+  display:inline-block; width:26px; height:1px; background:var(--rule-hi); font-style:normal;
+}
+
+.masthead h1{
+  font-family:"Bodoni Moda", Didot, Georgia, serif;
+  font-optical-sizing:auto;
+  font-weight:400;
+  font-size:clamp(46px, 8.4vw, 118px);
+  line-height:.94;
+  letter-spacing:-.022em;
+  margin:0;
+  max-width:15ch;
+  text-wrap:balance;
+}
+.masthead h1 em{ font-style:italic; font-weight:400; color:var(--cyan); }
+
+.masthead__deck{
+  margin:clamp(24px,3vw,40px) 0 0;
+  max-width:60ch;
+  font-size:clamp(17px,1.5vw,21px);
+  line-height:1.55;
+  font-weight:300;
+  color:var(--ink-2);
+  text-wrap:pretty;
+}
+.masthead__deck b{ color:var(--ink); font-weight:500; }
+
+/* Standing figures — a specification block, not a KPI row: hairline rules,
+   no cards, the numbers set in the display face so they read as type. */
+.spec{
+  margin-top:clamp(34px,5vw,60px);
+  border-top:1px solid var(--rule);
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(160px,1fr));
+}
+.spec > div{
+  padding:20px 22px 22px 0;
+  border-right:1px solid var(--rule-2);
+}
+.spec > div:last-child{ border-right:0; }
+.spec dt{ color:var(--ink-4); font-family:"IBM Plex Mono",monospace; font-size:10px;
+  letter-spacing:.17em; text-transform:uppercase; margin-bottom:8px; }
+.spec dd{
+  margin:0;
+  font-family:"Bodoni Moda", Didot, Georgia, serif;
+  font-optical-sizing:auto;
+  font-size:29px; line-height:1.05; letter-spacing:-.018em;
+  font-variant-numeric:lining-nums tabular-nums;
+}
+.spec dd small{ display:block; font-family:"Libre Franklin",sans-serif; font-size:12.5px;
+  letter-spacing:0; color:var(--ink-3); margin-top:7px; line-height:1.4; font-weight:350; }
+
+/* ============================================================================
+   Sections — a narrow mono rail beside a reading column, the way a
+   specification sheet is set.
+   ========================================================================== */
+
+section.band{ padding-block:clamp(44px,6vw,84px); border-top:1px solid var(--rule); }
+
+.band__grid{ display:grid; grid-template-columns:var(--rail) minmax(0,1fr); gap:clamp(20px,3.4vw,52px); }
+.band__rail{ position:sticky; top:26px; align-self:start; }
+.band__num{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.16em;
+  color:var(--cyan); display:block; margin-bottom:9px;
+}
+.band__rail p{ margin:0; font-size:12.5px; line-height:1.45; color:var(--ink-4); max-width:20ch; }
+
+h2.head{
+  font-family:"Bodoni Moda", Didot, Georgia, serif;
+  font-optical-sizing:auto;
+  font-weight:400;
+  font-size:clamp(30px,3.7vw,50px);
+  line-height:1.06; letter-spacing:-.02em;
+  margin:0 0 clamp(18px,2vw,26px);
+  max-width:20ch;
+  text-wrap:balance;
+}
+h3.sub{
+  font-family:"Libre Franklin",sans-serif;
+  font-size:14px; font-weight:600; letter-spacing:.005em;
+  margin:clamp(34px,4vw,48px) 0 12px; color:var(--ink);
+}
+h3.sub:first-child{ margin-top:0; }
+
+.prose{ max-width:66ch; }
+.prose p{ margin:0 0 1.05em; color:var(--ink-2); text-wrap:pretty; }
+.prose p:last-child{ margin-bottom:0; }
+.prose strong{ color:var(--ink); font-weight:600; }
+.prose em{ font-style:italic; color:var(--ink); }
+.prose code{
+  font-family:"IBM Plex Mono",monospace; font-size:.86em;
+  background:var(--plate-2); border:1px solid var(--rule-2);
+  padding:1px 5px; border-radius:2px; color:var(--ink);
+}
+
+.lede{
+  font-size:clamp(18px,1.7vw,22px); line-height:1.5; font-weight:300;
+  color:var(--ink); max-width:52ch; margin:0 0 1.4em;
+}
+
+/* Pull quote — the one place the Didone runs at reading size, so it has to
+   carry italic and a rule rather than quotation marks. */
+.pull{
+  margin:clamp(30px,4vw,44px) 0;
+  padding-left:clamp(18px,2.2vw,28px);
+  border-left:1px solid var(--cyan);
+  font-family:"Bodoni Moda", Didot, Georgia, serif;
+  font-optical-sizing:auto;
+  font-style:italic; font-weight:400;
+  font-size:clamp(20px,2.2vw,29px);
+  line-height:1.3; letter-spacing:-.01em;
+  color:var(--ink);
+  max-width:26ch;
+}
+
+/* --- check list ----------------------------------------------------------- */
+
+ol.checks{ list-style:none; margin:0; padding:0; counter-reset:c; }
+ol.checks > li{
+  counter-increment:c;
+  display:grid; grid-template-columns:34px minmax(0,1fr); gap:0 16px;
+  padding:17px 0; border-top:1px solid var(--rule-2);
+}
+ol.checks > li::before{
+  content:counter(c,decimal-leading-zero);
+  font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.08em;
+  color:var(--ink-4); padding-top:4px;
+}
+/* Both of these are grid items in their own right, so they must be pinned to the
+   content column — left to auto-placement the description drops into the 34px
+   number column and the item grows to ten times its height. */
+ol.checks b, ol.checks span{ grid-column:2; }
+ol.checks b{ display:block; font-weight:600; font-size:15px; color:var(--ink); margin-bottom:3px; }
+ol.checks span{ font-size:14.5px; color:var(--ink-2); line-height:1.55; display:block; }
+
+/* --- verdict table --------------------------------------------------------- */
+
+.verdicts{ border-top:1px solid var(--rule); }
+.verdict{
+  display:grid;
+  grid-template-columns:26px 1fr 108px;
+  gap:14px; align-items:start;
+  padding:15px 0; border-bottom:1px solid var(--rule-2);
+}
+.verdict__n{ font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ink-4); padding-top:3px; }
+.verdict__body b{ display:block; font-size:15px; font-weight:600; margin-bottom:3px; }
+.verdict__body span{ font-size:14px; color:var(--ink-2); line-height:1.5; }
+.verdict__body span .tnum{ color:var(--ink); font-weight:500; }
+
+.tag{
+  justify-self:end;
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.13em;
+  text-transform:uppercase; padding:4px 8px; border-radius:2px;
+  border:1px solid currentColor; white-space:nowrap;
+}
+.tag i{ font-style:normal; font-size:11px; line-height:1; }
+.tag--pass{ color:var(--pass); }
+.tag--weak{ color:var(--weak); }
+.tag--fail{ color:var(--fail); }
+
+/* --- figures --------------------------------------------------------------- */
+
+figure.fig{ margin:clamp(30px,4vw,46px) 0 0; }
+figure.fig svg{ display:block; width:100%; height:auto; overflow:visible; }
+.fig__head{ display:flex; flex-wrap:wrap; gap:6px 16px; align-items:baseline;
+  margin-bottom:18px; padding-bottom:11px; border-bottom:1px solid var(--rule); }
+.fig__head .mono{ color:var(--cyan); }
+.fig__head b{ font-size:15px; font-weight:600; }
+figcaption{ margin-top:14px; font-size:13.5px; line-height:1.55; color:var(--ink-3); max-width:70ch; }
+figcaption b{ color:var(--ink-2); font-weight:500; }
+
+.fig__scroll{ overflow-x:auto; scrollbar-width:thin; }
+.fig__scroll > svg{ min-width:520px; }
+
+/* SVG type */
+.s-lab{ font-family:"Libre Franklin",sans-serif; font-size:12px; font-weight:400; fill:var(--ink-2); }
+.s-val{ font-family:"IBM Plex Mono",monospace; font-size:11px; fill:var(--ink-3);
+  font-variant-numeric:tabular-nums; }
+.s-axis{ font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.1em;
+  fill:var(--ink-4); text-transform:uppercase; }
+.s-note{ font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.08em; fill:var(--weak); }
+.s-panel{ font-family:"Libre Franklin",sans-serif; font-size:12px; font-weight:600; fill:var(--ink); }
+
+/* --- data table ------------------------------------------------------------ */
+
+.tbl-wrap{ overflow-x:auto; margin-top:clamp(24px,3vw,34px); }
+table.data{ width:100%; border-collapse:collapse; font-size:14px; min-width:520px; }
+table.data th, table.data td{ text-align:right; padding:11px 12px; border-bottom:1px solid var(--rule-2); }
+table.data th:first-child, table.data td:first-child{ text-align:left; padding-left:0; }
+table.data th{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink-4); font-weight:400;
+  border-bottom:1px solid var(--rule);
+}
+table.data td{ color:var(--ink-2); font-variant-numeric:tabular-nums; }
+table.data td:first-child{ color:var(--ink); }
+table.data tr.is-key td{ color:var(--ink); font-weight:500; }
+table.data tr.is-emph td{ color:var(--ink); font-weight:600; }
+table.data tr.is-key td:first-child::after{
+  content:"shipped"; font-family:"IBM Plex Mono",monospace; font-size:9px;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--cyan);
+  margin-left:9px; vertical-align:1px;
+}
+.delta{ font-family:"IBM Plex Mono",monospace; font-size:11px; }
+.delta--up{ color:var(--pass); }
+.delta--flat{ color:var(--ink-4); }
+
+/* --- callout --------------------------------------------------------------- */
+
+.callout{
+  margin-top:clamp(28px,3.4vw,40px);
+  border:1px solid var(--rule);
+  border-left:2px solid var(--weak);
+  background:var(--plate);
+  padding:clamp(18px,2.2vw,26px);
+  border-radius:2px;
+}
+.callout .mono{ color:var(--weak); display:block; margin-bottom:10px; }
+.callout p{ margin:0 0 .85em; font-size:14.5px; color:var(--ink-2); max-width:64ch; }
+.callout p:last-child{ margin-bottom:0; }
+
+/* --- code block ------------------------------------------------------------ */
+
+pre.snip{
+  margin:22px 0 0; padding:16px 18px;
+  background:var(--plate); border:1px solid var(--rule); border-radius:2px;
+  overflow-x:auto;
+  font-family:"IBM Plex Mono",monospace; font-size:12.5px; line-height:1.65;
+  color:var(--ink-2);
+}
+pre.snip b{ color:var(--cyan); font-weight:400; }
+pre.snip i{ color:var(--ink-4); font-style:normal; }
+
+/* --- colophon -------------------------------------------------------------- */
+
+.colophon{
+  border-top:1px solid var(--rule);
+  padding-block:38px 66px;
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:26px clamp(24px,4vw,60px);
+  color:var(--ink-3); font-size:13.5px; line-height:1.55;
+}
+.colophon h4{ font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--ink-4); margin:0 0 9px; font-weight:400; }
+.colophon p{ margin:0 0 8px; max-width:42ch; }
+
+/* --- responsive ------------------------------------------------------------ */
+
+@media (max-width: 880px){
+  .band__grid{ grid-template-columns:1fr; gap:18px; }
+  .band__rail{ position:static; display:flex; align-items:baseline; gap:14px; }
+  .band__num{ margin-bottom:0; }
+  .band__rail p{ max-width:none; }
+  .spec > div{ border-right:0; border-bottom:1px solid var(--rule-2); padding-right:0; }
+}
+@media (max-width: 560px){
+  .verdict{ grid-template-columns:22px 1fr; }
+  .tag{ grid-column:2; justify-self:start; margin-top:7px; }
+  .masthead h1{ font-size:clamp(38px,11vw,58px); }
+}
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior:auto; }
+  *{ transition-duration:.001ms !important; animation-duration:.001ms !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="masthead wrap">
+  <p class="masthead__eyebrow mono">A data-visualisation skill <i></i> DE705 <i></i> spatial-claim-check</p>
+  <h1>Does <em>position</em> mean anything?</h1>
+  <p class="masthead__deck">
+    In a scatterplot, position is a measurement. In a force layout, a t-SNE or a bubble
+    pack, position is an <b>output</b> — and the viewer cannot tell the difference. This
+    skill audits the spatial claim a chart is making, and refuses to let it ship
+    unmeasured. Below, it is run on a genre constellation of 1,000 films — including
+    on the rebuild, where it found a regression its own author had missed.
+  </p>
+
+  <dl class="spec">
+    <div><dt>Checks</dt><dd class="tnum">7<small>plus one falsifiable measurement</small></dd></div>
+    <div><dt>Subject</dt><dd class="tnum">1,000<small>films, 21 genres, computed coordinates</small></dd></div>
+    <div><dt>Claim score</dt><dd class="tnum">55<span style="color:var(--ink-4)">→</span>69%<small>films nearest a genre they belong to</small></dd></div>
+    <div><dt>Verdicts</dt><dd class="tnum">5<small>of 7 checks failed on first run</small></dd></div>
+  </dl>
+</header>
+
+<!-- 01 ---------------------------------------------------------------------->
+<section class="band"><div class="wrap"><div class="band__grid">
+  <div class="band__rail"><span class="band__num">01</span><p>The problem</p></div>
+  <div>
+    <h2 class="head">A chart can lie with coordinates and never be caught</h2>
+    <div class="prose">
+      <p class="lede">Every chart a reader has ever seen taught them that near means alike.
+        Computed-position charts inherit that trust without earning it.</p>
+      <p>A force-directed graph, an embedding, a packed bubble chart and a word cloud all
+        produce an <em>x</em> and a <em>y</em> for every mark. None of those numbers came
+        off an axis. They are the output of a solver that was optimising for something —
+        edge tension, neighbourhood preservation, packing efficiency — which may or may
+        not be the thing the caption claims.</p>
+      <p>The failure is quiet. Nothing looks broken. The clusters are crisp, the shape is
+        organic, the picture is frequently beautiful. It is simply not about what it
+        appears to be about — most often because the layout has rediscovered which
+        category is <strong>most common</strong> rather than which things belong together.</p>
+      <p>So the skill starts by refusing to discuss aesthetics at all. It asks for one
+        sentence first.</p>
+    </div>
+    <blockquote class="pull">Two marks near each other in this chart means ———.</blockquote>
+    <div class="prose">
+      <p>If the sentence cannot be finished, position is decoration, and the honest move
+        is to replace the layout with one that encodes something — a sorted grid, a small
+        multiple, a ranked list — not to tune it. If it <em>can</em> be finished, it can
+        be measured, and everything after this point is arithmetic.</p>
+    </div>
+  </div>
+</div></div></section>
+
+<!-- 02 ---------------------------------------------------------------------->
+<section class="band"><div class="wrap"><div class="band__grid">
+  <div class="band__rail"><span class="band__num">02</span><p>The skill</p></div>
+  <div>
+    <h2 class="head">Seven checks and one number</h2>
+    <div class="prose">
+      <p>Checks run in order; check 1 is a gate. The eighth item is not a check but a
+        habit, and it is the one that does the real work.</p>
+    </div>
+
+    <ol class="checks">
+      <li><b>State the claim</b><span>Complete the sentence above. If it cannot be completed, stop — do not optimise a claim that does not exist.</span></li>
+      <li><b>Frequency domination</b><span>If one category exceeds ~40% of rows, any raw-count layout collapses toward it. It becomes the nearest neighbour of nearly everything for no reason but being common.</span></li>
+      <li><b>What the method supports</b><span>Per method, name the readings it forbids. t-SNE cluster sizes and between-cluster distances are meaningless. Bubble-pack adjacency is a packing artifact. Sankey node order is a crossing heuristic, not a ranking.</span></li>
+      <li><b>Determinism</b><span>Re-run it. If the picture changes, it is not a map — a cluster cannot be pointed at twice. Seed every stochastic step.</span></li>
+      <li><b>Aggregation collapse</b><span>When marks sit at a centroid of anchors: does the common member dominate the mean, and does cluster radius exceed the distance to the nearest foreign anchor?</span></li>
+      <li><b>Legibility at N</b><span>Layout area ÷ mark count. Can the mark carry its encoding at that size? A dot carries a value in radius and lightness at 3px; an image carries nothing.</span></li>
+      <li><b>Caveat and coordinates</b><span>One sentence in the frame saying what position does and does not mean — and a way to hand the coordinates over, so the claim can be checked rather than trusted.</span></li>
+    </ol>
+
+    <h3 class="sub">Then: measure it, don't argue about it</h3>
+    <div class="prose">
+      <p>Layout-quality arguments are unfalsifiable until someone writes down a number.
+        Every claim shape has a corresponding scale-free test, and every test has a
+        random baseline that must be reported beside it — <em>40% sounds poor until you
+        know that shuffling scores 12%.</em></p>
+    </div>
+    <pre class="snip"><i># claim: "items sit among the groups they belong to"</i>
+score = share of items whose <b>nearest anchor</b> is one of their own groups
+base  = mean groups per item ÷ number of anchors
+
+<i># claim: "similar items are near each other"</i>
+score = <b>k-NN label agreement</b> — share of k nearest neighbours sharing a label
+base  = overall label prevalence</pre>
+    <div class="prose">
+      <p style="margin-top:1.05em"><strong>And ablate.</strong> Changing four things at once and
+        reporting one improvement is not evidence. Vary one at a time and publish the
+        table — including the rows where the change you were proudest of did nothing.</p>
+    </div>
+  </div>
+</div></div></section>
+
+<!-- 03 ---------------------------------------------------------------------->
+<section class="band"><div class="wrap"><div class="band__grid">
+  <div class="band__rail"><span class="band__num">03</span><p>The audit</p></div>
+  <div>
+    <h2 class="head">Run on “1,000 Films, 21 Genres”</h2>
+    <div class="prose">
+      <p>The subject places 1,000 films by genre: Drama fixed at the centre of the field,
+        the other twenty on a circle around it, each film at the <em>unweighted mean</em>
+        of its genres' positions, relaxed with a force simulation. Marks are 22 × 32 px
+        poster images. Its stated claim is a good one — <em>“films with more than one
+        genre sit between the clusters they belong to”</em> — which is precisely what
+        makes it auditable.</p>
+    </div>
+
+    <figure class="fig">
+      <div class="fig__head"><span class="mono">Fig. 1</span><b>One genre is 72.4% of the collection</b></div>
+      <div class="fig__scroll"><svg id="fig-share" role="img" aria-label="Horizontal bar chart of genre share. Drama is 72.4 percent, far beyond the 40 percent domination threshold; the next largest, Comedy, is 23.3 percent."></svg></div>
+      <figcaption><b>Check 2 fails here.</b> Any layout driven by raw co-occurrence will
+        rediscover that Drama is common and place everything relative to it. Share is of
+        1,000 films; genres overlap, so the column does not sum to 100%.</figcaption>
+    </figure>
+
+    <h3 class="sub">Verdict</h3>
+    <div class="verdicts" id="verdicts"></div>
+
+    <h3 class="sub">The claim, measured</h3>
+    <div class="prose">
+      <p>For every film, find the nearest of the 21 genre anchors and ask whether it is
+        one of that film's own genres. No radius, no units, no dependence on canvas size.
+        Random placement scores about 12%.</p>
+      <p><strong>The original scores 55.4% overall — and the total is misleading.</strong>
+        It aces the trivial case, where a single-genre film is placed exactly on its
+        anchor and barely moves, then does <em>worst</em> on the case the piece exists to
+        show. Three-genre films are 64.6% of the collection and the entire premise of
+        “sitting between clusters”; they land nearest a genre they do not belong to more
+        than half the time.</p>
+    </div>
+  </div>
+</div></div></section>
+
+<!-- 04 ---------------------------------------------------------------------->
+<section class="band"><div class="wrap"><div class="band__grid">
+  <div class="band__rail"><span class="band__num">04</span><p>The mechanism</p></div>
+  <div>
+    <h2 class="head">Raw counts mostly rediscover what is common</h2>
+    <div class="prose">
+      <p>Dividing co-occurrence by the union of the two genres — Jaccard — corrects for
+        how common each one is. The reordering is not subtle: every pair whose only
+        distinction was containing Drama falls away, and pairs that are specifically each
+        other's rise.</p>
+    </div>
+
+    <figure class="fig">
+      <div class="fig__head"><span class="mono">Fig. 2</span><b>What counts as a “strong pair” changes completely</b></div>
+      <div class="fig__scroll"><svg id="fig-slope" role="img" aria-label="Slopegraph comparing genre-pair rank by raw co-occurrence count against rank by Jaccard. Pairs containing Drama fall sharply; Action plus Adventure rises from 5 to 1, Biography plus History from 24 to 4, Family plus Fantasy from 37 to 9."></svg></div>
+      <figcaption>Rank among all 134 co-occurring genre pairs, under each measure. Shown
+        are the pairs in the top nine of either. <b>Rising pairs</b> are the ones raw
+        counts were hiding.</figcaption>
+    </figure>
+
+    <div class="prose">
+      <p style="margin-top:2em">Geometrically, the consequence is a single number. Under raw
+        counts Drama sits <strong>0.039</strong> from the centre of the layout while the
+        average anchor sits at <strong>0.302</strong> — pinned at the gravitational centre,
+        at 13% of a typical anchor's distance from it. Because 72.4% of films carry Drama
+        into their centroid, most of the collection is dragged into an undifferentiated
+        middle. Under Jaccard it moves out to 0.071.</p>
+    </div>
+  </div>
+</div></div></section>
+
+<!-- 05 ---------------------------------------------------------------------->
+<section class="band"><div class="wrap"><div class="band__grid">
+  <div class="band__rail"><span class="band__num">05</span><p>Ablation</p></div>
+  <div>
+    <h2 class="head">Four changes, varied one at a time</h2>
+    <div class="prose">
+      <p>Reporting the four fixes as a bundle would prove nothing. Each was varied alone
+        against the same metric. The shipped configuration is confirmed against the live
+        artifact via <code>window.__spatialAudit()</code>, which returns the same four
+        figures — so the offline reproduction is faithful and the rest of the table can
+        be trusted.</p>
+    </div>
+
+    <figure class="fig">
+      <div class="fig__head"><span class="mono">Fig. 3</span><b>What each change was actually worth</b></div>
+      <div class="fig__scroll"><svg id="fig-ablate" role="img" aria-label="Bar chart of the claim metric across five cumulative configurations, from 39.7 percent for raw counts to 69.3 percent for the shipped build. Jaccard adds 16.4 points, the cluster radius cap adds 11.1, and the rarity-weighted centroid adds nothing."></svg></div>
+      <figcaption>Cumulative. Each row adds one change to the row above. Baseline marks
+        random placement.</figcaption>
+    </figure>
+
+    <div class="tbl-wrap">
+      <table class="data">
+        <thead><tr><th>Configuration</th><th>Overall</th><th>Δ</th><th>1 genre</th><th>2 genres</th><th>3 genres</th></tr></thead>
+        <tbody id="ablate-rows"></tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">Including the unflattering rows</h3>
+    <div class="prose">
+      <p><strong>Jaccard is the single biggest lever</strong>, +16.4 points. It earns its place.</p>
+      <p><strong>The aspect-fill fit adds 2.1</strong>, not the transformation it appeared to
+        be. Judged by eye it looked like the change that spread the layout out. Measured,
+        it is a minor contributor — and the two measures produce nearly identical anchor
+        adjacency, so the earlier claim that Jaccard “spread the layout” was wrong. What
+        it changes is how far Drama sits from the pack, not who is beside whom.</p>
+      <p><strong>The rarity-weighted centroid contributes zero points overall.</strong> It
+        redistributes — two-genre films up 6.8, three-genre films down 2.8 — and it
+        populates the outer clusters visually, which is why it was kept. Saying it
+        improved the claim would be false.</p>
+      <p><strong>The cluster radius cap adds 11.1</strong>, and exists only because the audit
+        was also run on the rebuild.</p>
+    </div>
+
+    <div class="callout">
+      <span class="mono">The regression the skill caught</span>
+      <p>Before the cap, single-genre films scored <strong>29.5%</strong> — far worse than
+        the original build's 98.1%. The rebuild had quietly broken the easiest case while
+        fixing the hard one. The Drama-only cluster was spreading 145 px while Comedy's
+        anchor sat 108 px away, so its outer stars were literally nearer a genre they did
+        not belong to.</p>
+      <p>The rule that fixes it: a cluster may grow to at most <strong>0.46 × the distance
+        from its centroid to the nearest anchor it does not belong to</strong>. Past the
+        halfway point, a chart contradicts its own caption.</p>
+    </div>
+  </div>
+</div></div></section>
+
+<!-- 06 ---------------------------------------------------------------------->
+<section class="band"><div class="wrap"><div class="band__grid">
+  <div class="band__rail"><span class="band__num">06</span><p>Result</p></div>
+  <div>
+    <h2 class="head">Before, the regression, and after</h2>
+
+    <figure class="fig">
+      <div class="fig__head"><span class="mono">Fig. 4</span><b>The claim metric, by how many genres a film has</b></div>
+      <div class="fig__scroll"><svg id="fig-compare" role="img" aria-label="Small multiples comparing the original build, the first rebuild and the shipped rebuild across overall, one-genre, two-genre and three-genre films. The original scores 98.1 percent on one-genre films but 46.9 on three-genre; the first rebuild reverses this; the shipped build leads in every panel."></svg></div>
+      <figcaption>Same scale in every panel. <b>Rebuild v1</b> is the version the audit
+        rejected: better on the premise, catastrophically worse on the trivial case.
+        Dashed rule is random placement.</figcaption>
+    </figure>
+
+    <div class="tbl-wrap">
+      <table class="data">
+        <thead><tr><th>&nbsp;</th><th>Original</th><th>Shipped</th></tr></thead>
+        <tbody>
+          <tr><td>Nearest anchor is own genre</td><td>55.4%</td><td>~69%</td></tr>
+          <tr class="is-emph"><td>— three-genre films, the premise</td><td>46.9%</td><td>67.2%</td></tr>
+          <tr><td>Genres with no films near their label</td><td>4 of 21</td><td>0 of 21</td></tr>
+          <tr><td>Deterministic across reloads</td><td>no</td><td>yes</td></tr>
+          <tr><td>Rating encoded</td><td>not at all</td><td>radius + brightness</td></tr>
+          <tr><td>Caveat in the artifact</td><td>none</td><td>one sentence, in frame</td></tr>
+          <tr><td>Coordinates auditable</td><td>no</td><td>yes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="sub">What a second pass found</h3>
+    <div class="prose">
+      <p>The skill was run again on the redesigned page, and two checks that had
+        passed on the original failed on the rebuild, both because the rebuild was
+        more ambitious. Its genre labels were unreadable over the dense core and
+        collided with each other at narrow widths; the original had never triggered
+        that because its labels sat in empty space, which is to say it passed by
+        accident. And the rebuild added depth and parallax, which is a spatial claim
+        of its own: an axis the reader can see but that encodes nothing. Depth is
+        now bound to rating, which it already needed to show.</p>
+      <p><strong>One correction to the numbers on this page.</strong> The metric is
+        scale-free, but the layout is recomputed per viewport, so the anchors move
+        when the frame's aspect ratio changes and the score moves with them. The same
+        configuration measured 69.3%, 69.2% and 68.5% across three container sizes.
+        All three are right for the frame they were taken in; printing any of them to
+        one decimal as though it were a property of the layout was not.</p>
+    </div>
+
+    <div class="prose" style="margin-top:2.2em">
+      <p>Four of twenty-one genres — Biography, Mystery, Family and War — had <strong>zero
+        films within 120 px of their own label</strong> in the original, while holding 109,
+        99, 56 and 51 films between them. The label said Mystery and not one of its
+        ninety-nine films was anywhere near it.</p>
+    </div>
+  </div>
+</div></div></section>
+
+<!-- 07 ---------------------------------------------------------------------->
+<section class="band"><div class="wrap"><div class="band__grid">
+  <div class="band__rail"><span class="band__num">07</span><p>Correction</p></div>
+  <div>
+    <h2 class="head">What this audit got wrong first</h2>
+    <div class="prose">
+      <p>An early pass recorded that the original rendered a near-empty field with almost
+        no posters loading. That was wrong, and it is on the page because the way it went
+        wrong is instructive.</p>
+      <p>The browser running the check was not painting. That suppressed
+        <code>loading="lazy"</code> so completely that <strong>zero image requests were ever
+        issued</strong> — the field looked empty because nothing had been asked for. Forcing
+        a real paint showed 923 of 1,000 posters loading into a dense, rather striking
+        mass.</p>
+      <p>The actual defect was never the loading. It was that a thousand unreadable marks
+        packed into one blob say nothing about genre — a spatial-claim failure, and one
+        only visible once the thing genuinely rendered. Hence the last line of the skill's
+        <em>Never</em> list: never conclude from a rendering you have not actually seen.</p>
+    </div>
+  </div>
+</div></div></section>
+
+<footer class="colophon wrap">
+  <div>
+    <h4>The skill</h4>
+    <p><code style="font-family:'IBM Plex Mono',monospace;font-size:12px">SKILL.md</code>
+      with two reference files — association measures, and what each layout method
+      licenses you to claim.</p>
+  </div>
+  <div>
+    <h4>Reproducing</h4>
+    <p><code style="font-family:'IBM Plex Mono',monospace;font-size:12px">evidence/ablate.js</code>
+      regenerates the ablation table; <code style="font-family:'IBM Plex Mono',monospace;font-size:12px">figures.js</code>
+      regenerates every number on this page.</p>
+  </div>
+  <div>
+    <h4>Data</h4>
+    <p>IMDb Top 1000, 1920–2020. Ratings 7.6–9.3, so the collection is a narrow,
+      already-selected band of acclaim.</p>
+  </div>
+  <div>
+    <h4>Set in</h4>
+    <p>Bodoni Moda, Libre Franklin and IBM Plex Mono. Ground after the cyanotype, a
+      process invented to reproduce measured drawings faithfully.</p>
+  </div>
+</footer>
+
+<script>
+/* ============================================================================
+   Charts. Written out as SVG from the measured numbers rather than hand-drawn,
+   so a corrected figure corrects the picture. Every scale starts at zero, every
+   value is directly labelled, and no chart uses colour as its only channel.
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a) => { const e = document.createElementNS(NS, n);
+    for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const txt = (s, a) => { const t = el('text', a); t.textContent = s; return t; };
+  const C = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  const SHARE = [{"genre":"Drama","pct":72.4},{"genre":"Comedy","pct":23.3},{"genre":"Crime","pct":20.9},{"genre":"Adventure","pct":19.6},{"genre":"Action","pct":18.9},{"genre":"Thriller","pct":13.7},{"genre":"Romance","pct":12.5},{"genre":"Biography","pct":10.9},{"genre":"Mystery","pct":9.9},{"genre":"Animation","pct":8.2},{"genre":"Sci-Fi","pct":6.7},{"genre":"Fantasy","pct":6.6},{"genre":"History","pct":5.6},{"genre":"Family","pct":5.6},{"genre":"War","pct":5.1},{"genre":"Music","pct":3.5},{"genre":"Horror","pct":3.2},{"genre":"Western","pct":2},{"genre":"Film-Noir","pct":1.9},{"genre":"Sport","pct":1.9},{"genre":"Musical","pct":1.7}];
+
+  const SLOPE = [{"l":"Crime + Drama","rr":1,"rj":3},{"l":"Comedy + Drama","rr":2,"rj":11},{"l":"Drama + Romance","rr":3,"rj":13},{"l":"Biography + Drama","rr":4,"rj":14},{"l":"Action + Adventure","rr":5,"rj":1},{"l":"Drama + Thriller","rr":6,"rj":18},{"l":"Action + Drama","rr":7,"rj":22},{"l":"Adventure + Drama","rr":8,"rj":29},{"l":"Drama + Mystery","rr":9,"rj":28},{"l":"Action + Crime","rr":10,"rj":6},{"l":"Adventure + Animation","rr":13,"rj":2},{"l":"Comedy + Romance","rr":14,"rj":7},{"l":"Crime + Thriller","rr":15,"rj":8},{"l":"Mystery + Thriller","rr":19,"rj":5},{"l":"Biography + History","rr":24,"rj":4},{"l":"Family + Fantasy","rr":37,"rj":9}];
+
+  const ABLATE = [
+    { k:'A', label:'Raw counts, plain centroid',   overall:39.7, d:null,  g:[16.2,33.7,45.8] },
+    { k:'B', label:'+ Jaccard affinity',           overall:56.1, d:16.4,  g:[24.8,48.2,64.2] },
+    { k:'C', label:'+ Aspect-fill fit',            overall:58.2, d:2.1,   g:[28.6,47.8,67.0] },
+    { k:'D', label:'+ Rarity-weighted centroid',   overall:58.2, d:0.0,   g:[29.5,54.6,64.2] },
+    { k:'E', label:'+ Cluster radius cap',         overall:69.3, d:11.1,  g:[100.0,61.8,67.2], key:true }
+  ];
+
+  const COMPARE = {
+    panels: ['Overall', 'One genre', 'Two genres', 'Three genres'],
+    series: [
+      // `on` is the text colour for a label that lands inside the bar. The steel
+      // tone is mid-dark, so dark-on-steel measures 4.0:1 — under the 4.5 floor.
+      { name:'Original',   v:[55.4, 98.1, 59.4, 46.9], tone:'--ink-3', on:'--ink'   },
+      { name:'Rebuild v1', v:[58.2, 29.5, 54.6, 64.2], tone:'--weak',  on:'--abyss' },
+      { name:'Shipped',    v:[69.3,100.0, 61.8, 67.2], tone:'--pass',  on:'--abyss' }
+    ]
+  };
+  const BASE = 12;
+
+  /* --- Fig 1: genre share ------------------------------------------------- */
+  (function () {
+    const W = 760, padL = 92, padR = 54, rowH = 19, top = 34;
+    const H = top + SHARE.length * rowH + 16;
+    const iw = W - padL - padR;
+    const max = 80;                                  // zero-based, headroom past 72.4
+    const x = v => padL + (v / max) * iw;
+
+    const svg = document.getElementById('fig-share');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+
+    [0, 20, 40, 60, 80].forEach(v => {
+      svg.appendChild(el('line', { x1:x(v), y1:top - 12, x2:x(v), y2:H - 16,
+        stroke:C('--rule-2'), 'stroke-width':1 }));
+      svg.appendChild(txt(v + '%', { x:x(v), y:top - 18, class:'s-axis', 'text-anchor':'middle' }));
+    });
+
+    // Domination threshold — the finding, not decoration.
+    svg.appendChild(el('line', { x1:x(40), y1:top - 12, x2:x(40), y2:H - 16,
+      stroke:C('--weak'), 'stroke-width':1, 'stroke-dasharray':'3 3', opacity:.75 }));
+    svg.appendChild(txt('40% — domination threshold', { x:x(40) + 7, y:H - 4, class:'s-note' }));
+
+    SHARE.forEach((d, i) => {
+      const y = top + i * rowH;
+      const over = d.pct > 40;
+      svg.appendChild(txt(d.genre, { x:padL - 10, y:y + 10, class:'s-lab',
+        'text-anchor':'end', fill: over ? C('--ink') : C('--ink-2') }));
+      svg.appendChild(el('rect', { x:padL, y:y + 2, width:Math.max(1, x(d.pct) - padL),
+        height:rowH - 8, rx:1, fill: over ? C('--fail') : C('--ink-4') }));
+      svg.appendChild(txt(d.pct.toFixed(1) + '%', { x:x(d.pct) + 7, y:y + 10, class:'s-val',
+        fill: over ? C('--fail') : C('--ink-3') }));
+    });
+  })();
+
+  /* --- Fig 2: slopegraph --------------------------------------------------- */
+  (function () {
+    const W = 860, H = 570, top = 52, bot = H - 34;
+    const xL = 250, xR = W - 250;
+    const maxRank = 37;
+    const y = r => top + ((r - 1) / (maxRank - 1)) * (bot - top);
+
+    const svg = document.getElementById('fig-slope');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+
+    svg.appendChild(txt('Rank by raw count', { x:xL - 12, y:top - 26, class:'s-axis', 'text-anchor':'end' }));
+    svg.appendChild(txt('Rank by Jaccard', { x:xR + 12, y:top - 26, class:'s-axis' }));
+    svg.appendChild(el('line', { x1:xL, y1:top - 14, x2:xL, y2:bot + 8, stroke:C('--rule'), 'stroke-width':1 }));
+    svg.appendChild(el('line', { x1:xR, y1:top - 14, x2:xR, y2:bot + 8, stroke:C('--rule'), 'stroke-width':1 }));
+
+    SLOPE.forEach(d => {
+      const rose = d.rj < d.rr;
+      const tone = rose ? C('--cyan') : C('--ink-4');
+      const y1 = y(d.rr), y2 = y(d.rj);
+      svg.appendChild(el('line', { x1:xL + 6, y1:y1, x2:xR - 6, y2:y2,
+        stroke:tone, 'stroke-width': rose ? 1.4 : 1, opacity: rose ? .85 : .5 }));
+      svg.appendChild(el('circle', { cx:xL + 6, cy:y1, r:2.5, fill:tone }));
+      svg.appendChild(el('circle', { cx:xR - 6, cy:y2, r:2.5, fill:tone }));
+
+      svg.appendChild(txt(d.l, { x:xL - 34, y:y1 + 4, class:'s-lab',
+        'text-anchor':'end', fill: rose ? C('--ink') : C('--ink-3') }));
+      svg.appendChild(txt(d.rr, { x:xL - 12, y:y1 + 4, class:'s-val', 'text-anchor':'end' }));
+      svg.appendChild(txt(d.rj, { x:xR + 12, y:y2 + 4, class:'s-val',
+        fill: rose ? C('--cyan') : C('--ink-4') }));
+      // Labelled at both ends: with sixteen lines crossing, a slopegraph labelled
+      // on one side only cannot be read back from the side that matters.
+      svg.appendChild(txt(d.l, { x:xR + 36, y:y2 + 4, class:'s-lab',
+        fill: rose ? C('--ink') : C('--ink-4') }));
+    });
+
+    // Legend as a footnote rather than a floating label beside the axis title,
+    // where it collided with it.
+    const ly = bot + 26;
+    svg.appendChild(el('line', { x1:0, y1:ly - 4, x2:26, y2:ly - 4, stroke:C('--cyan'), 'stroke-width':1.4 }));
+    svg.appendChild(txt('rose under Jaccard — pairs raw counts were hiding', { x:34, y:ly, class:'s-note', fill:C('--cyan') }));
+  })();
+
+  /* --- Fig 3: ablation ----------------------------------------------------- */
+  (function () {
+    const W = 760, padL = 216, padR = 92, rowH = 42, top = 34;
+    const H = top + ABLATE.length * rowH + 22;
+    const iw = W - padL - padR;
+    const x = v => padL + (v / 100) * iw;
+
+    const svg = document.getElementById('fig-ablate');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+
+    [0, 25, 50, 75, 100].forEach(v => {
+      svg.appendChild(el('line', { x1:x(v), y1:top - 12, x2:x(v), y2:H - 22,
+        stroke:C('--rule-2'), 'stroke-width':1 }));
+      svg.appendChild(txt(v + '%', { x:x(v), y:top - 18, class:'s-axis', 'text-anchor':'middle' }));
+    });
+
+    svg.appendChild(el('line', { x1:x(BASE), y1:top - 12, x2:x(BASE), y2:H - 22,
+      stroke:C('--weak'), 'stroke-width':1, 'stroke-dasharray':'3 3', opacity:.7 }));
+    svg.appendChild(txt('random ≈12%', { x:x(BASE) + 7, y:H - 10, class:'s-note' }));
+
+    ABLATE.forEach((d, i) => {
+      const y = top + i * rowH;
+      svg.appendChild(txt(d.k, { x:0, y:y + 20, class:'s-val', fill:C('--ink-4') }));
+      svg.appendChild(txt(d.label, { x:18, y:y + 20, class:'s-lab',
+        fill: d.key ? C('--ink') : C('--ink-2') }));
+      svg.appendChild(el('rect', { x:padL, y:y + 7, width:Math.max(1, x(d.overall) - padL),
+        height:18, rx:1, fill: d.key ? C('--pass') : C('--ink-4') }));
+      svg.appendChild(txt(d.overall.toFixed(1) + '%', { x:x(d.overall) + 8, y:y + 20,
+        class:'s-val', fill: d.key ? C('--pass') : C('--ink-2') }));
+      if (d.d !== null) {
+        const flat = d.d === 0;
+        svg.appendChild(txt((flat ? '±' : '+') + d.d.toFixed(1), { x:padL - 10, y:y + 20,
+          class:'s-val', 'text-anchor':'end', fill: flat ? C('--ink-4') : C('--pass') }));
+      }
+    });
+  })();
+
+  /* --- Fig 4: small multiples ----------------------------------------------
+     A matrix, not four stacked charts: the series are named once down the left
+     and the panels are columns, so no label has to be squeezed into the 9px
+     gap above its own bar. Identical scale in every panel is the whole point of
+     a small multiple — the eye compares across without recalibrating. */
+  (function () {
+    const W = 860, labelW = 104, panels = COMPARE.panels.length;
+    const pw = (W - labelW) / panels, inner = pw - 30;
+    const rowTop = 56, barH = 17, pitch = 30;
+    const H = rowTop + COMPARE.series.length * pitch + 34;
+    const x = (v, ox) => ox + (v / 100) * inner;
+
+    const svg = document.getElementById('fig-compare');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+
+    COMPARE.series.forEach((s, si) => {
+      const y = rowTop + si * pitch;
+      svg.appendChild(txt(s.name, { x:0, y:y + 12, class:'s-lab',
+        fill:C(s.tone), 'font-weight':'500' }));
+    });
+
+    COMPARE.panels.forEach((p, pi) => {
+      const ox = labelW + pi * pw;
+      svg.appendChild(txt(p, { x:ox, y:22, class:'s-panel' }));
+      svg.appendChild(el('line', { x1:ox, y1:32, x2:ox + inner, y2:32,
+        stroke:C('--rule'), 'stroke-width':1 }));
+      svg.appendChild(txt('0', { x:ox, y:H - 16, class:'s-axis' }));
+      svg.appendChild(txt('100%', { x:ox + inner, y:H - 16, class:'s-axis', 'text-anchor':'end' }));
+
+      // Random baseline, identical position in every panel.
+      svg.appendChild(el('line', { x1:x(BASE, ox), y1:38,
+        x2:x(BASE, ox), y2:rowTop + COMPARE.series.length * pitch - 6,
+        stroke:C('--weak'), 'stroke-width':1, 'stroke-dasharray':'2 3', opacity:.55 }));
+
+      COMPARE.series.forEach((s, si) => {
+        const y = rowTop + si * pitch;
+        const w = Math.max(1, x(s.v[pi], ox) - ox);
+        svg.appendChild(el('rect', { x:ox, y:y, width:w, height:barH, rx:1, fill:C(s.tone) }));
+        // Outside the bar where there is room, inside where there is not.
+        const outside = w < inner - 34;
+        svg.appendChild(txt(s.v[pi].toFixed(1), {
+          x: outside ? ox + w + 6 : ox + w - 6,
+          y: y + 12, class:'s-val',
+          'text-anchor': outside ? 'start' : 'end',
+          'font-weight':'500',
+          fill: outside ? C(s.tone) : C(s.on)
+        }));
+      });
+    });
+
+    svg.appendChild(el('line', { x1:0, y1:H - 20, x2:20, y2:H - 20,
+      stroke:C('--weak'), 'stroke-width':1, 'stroke-dasharray':'2 3' }));
+    svg.appendChild(txt('random placement ≈12%', { x:28, y:H - 16, class:'s-note' }));
+  })();
+
+  /* --- verdict list -------------------------------------------------------- */
+  (function () {
+    const V = [
+      ['01','Claim stated','pass','The piece commits to one — “films with more than one genre sit between the clusters they belong to.” Testable, which is what makes the rest possible.'],
+      ['02','Frequency domination','fail','Drama is <span class="tnum">72.4%</span> of the collection, far past the 40% threshold. It tops six of the eight strongest raw pairs.'],
+      ['03','Method supports the reading','weak','Force layout: adjacency is readable, absolute position is not. Fixing Drama at the centre invites reading the middle as “most typical”.'],
+      ['04','Determinism','fail','Node jitter uses unseeded <code>Math.random()</code>. The map differs on every reload; a cluster cannot be pointed at twice.'],
+      ['05','Aggregation collapse','fail','Unweighted centroid at 72.4% Drama. <span class="tnum">4</span> of 21 genres have <span class="tnum">zero</span> films within 120px of their own label.'],
+      ['06','Legibility at N','fail','Layout affords <span class="tnum">1,048&nbsp;px²</span> per mark; the mark is a <span class="tnum">22×32&nbsp;px</span> poster needing 60–80px to be identifiable. Rating is not encoded at all.'],
+      ['07','Caveat and coordinates','fail','No caveat in the artifact, though the project brief warned it “must not read as a scientific instrument”. No way to extract coordinates.']
+    ];
+    const GLYPH = { pass:'✓', weak:'~', fail:'✕' }, WORD = { pass:'Pass', weak:'Weak', fail:'Fail' };
+    document.getElementById('verdicts').innerHTML = V.map(v =>
+      '<div class="verdict">' +
+        '<span class="verdict__n">' + v[0] + '</span>' +
+        '<span class="verdict__body"><b>' + v[1] + '</b><span>' + v[3] + '</span></span>' +
+        '<span class="tag tag--' + v[2] + '"><i>' + GLYPH[v[2]] + '</i>' + WORD[v[2]] + '</span>' +
+      '</div>').join('');
+  })();
+
+  /* --- ablation table ------------------------------------------------------ */
+  (function () {
+    document.getElementById('ablate-rows').innerHTML = ABLATE.map(d =>
+      '<tr' + (d.key ? ' class="is-key"' : '') + '>' +
+        '<td>' + d.k + ' — ' + d.label + '</td>' +
+        '<td>' + d.overall.toFixed(1) + '%</td>' +
+        '<td>' + (d.d === null ? '<span class="delta delta--flat">—</span>'
+          : '<span class="delta ' + (d.d === 0 ? 'delta--flat' : 'delta--up') + '">' +
+            (d.d === 0 ? '±' : '+') + d.d.toFixed(1) + '</span>') + '</td>' +
+        d.g.map(v => '<td>' + v.toFixed(1) + '%</td>').join('') +
+      '</tr>').join('');
+  })();
+})();
+</script>
+</body>
+</html>

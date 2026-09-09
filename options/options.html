@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>imdb-top-1000-films — Design Direction Options</title>
+<style>
+  :root{
+    --ink:#1a1815;
+    --paper:#faf7f0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;}
+  header.intro{padding:28px 32px 18px;border-bottom:1px solid #d8d2c4;}
+  header.intro h1{font-size:15px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px;font-weight:600;}
+  header.intro p{margin:0;font-size:13px;color:#5a564c;max-width:64ch;line-height:1.5;}
+  nav.jump{display:flex;gap:14px;padding:12px 32px;font-size:12px;border-bottom:1px solid #d8d2c4;background:#f2ede1;position:sticky;top:0;z-index:50;}
+  nav.jump a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent;}
+  nav.jump a:hover{border-bottom-color:var(--ink);}
+
+  section.opt{padding:36px 32px 44px;border-bottom:1px solid #d8d2c4;}
+  .opt-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:18px;max-width:1400px;margin-left:auto;margin-right:auto;}
+  .opt-head .eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.6;margin:0 0 4px;}
+  .opt-head h2{margin:0;font-size:26px;font-weight:700;}
+  .opt-head .tagline{font-size:13px;color:#5a564c;margin:4px 0 0;max-width:52ch;}
+  .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px 20px;font-size:11.5px;line-height:1.45;max-width:1400px;margin:0 auto 22px;padding:14px 16px;background:#f2ede1;border:1px solid #ddd7c8;}
+  .meta-grid dt{font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:10px;opacity:.65;margin:0 0 2px;}
+  .meta-grid dd{margin:0;}
+
+  .stage{position:relative;max-width:1400px;margin:0 auto;border:1px solid #ddd7c8;overflow:hidden;}
+  .stage img{position:absolute;object-fit:cover;border-radius:2px;}
+  .stage svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+  .poster{position:absolute;object-fit:cover;border-radius:2px;cursor:pointer;transition:transform .12s ease, box-shadow .12s ease, z-index 0s;}
+  .poster:hover{transform:scale(2.4);z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.35);}
+  .film-label{position:absolute;font-size:10.5px;line-height:1.3;padding:3px 6px;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity .1s;z-index:201;}
+  .poster:hover + .film-label, .poster-wrap:hover .film-label{opacity:1;}
+
+  /* Option A — The Constellation */
+  #stage-a{height:820px;background:#15130f;}
+  #stage-a .genre-tag{position:absolute;font:italic 11px Georgia,serif;color:#c9c2ae;letter-spacing:.03em;opacity:.55;transform:translate(-50%,-50%);pointer-events:none;}
+  #stage-a .film-label{color:#f2ede1;background:rgba(10,9,7,.92);border:1px solid #3a352b;}
+
+  /* Option B — Genre Weave */
+  #stage-b{height:820px;background:#efe8d8;}
+  #stage-b .thread-label{position:absolute;font:600 10px/1.2 Georgia,serif;letter-spacing:.05em;text-transform:uppercase;color:#6b6350;}
+  #stage-b .film-label{color:#fbf8f0;background:rgba(26,24,19,.92);}
+
+  /* Option C — Genre Broadsheet */
+  #stage-c{background:#e7e1d2;padding:0;border:none;}
+  .broadsheet-grid{background:#c9c2ae;padding:1px;}
+  .zone{background:#e7e1d2;padding:8px;overflow:hidden;position:relative;}
+  .zone.tier-large{width:100%;margin-bottom:1px;}
+  .column-flow{columns:4 240px;column-gap:1px;}
+  .zone.tier-medium,.zone.tier-small{break-inside:avoid;margin-bottom:1px;}
+  .zone h3{font:800 13px/1.1 Georgia,'Times New Roman',serif;text-transform:uppercase;letter-spacing:.02em;margin:0 0 6px;padding-bottom:4px;border-bottom:2px solid var(--ink);}
+  .zone .thumbs{display:flex;flex-wrap:wrap;gap:3px;}
+  .zone .thumbs img{width:26px;height:38px;object-fit:cover;border-radius:1px;}
+  .zone .thumbs img.dup{outline:1px dashed #6b6350;outline-offset:1px;opacity:.85;}
+  #stage-c .film-label{color:#fbf8f0;background:rgba(26,24,19,.92);}
+
+  .risk-strengths{max-width:1400px;margin:18px auto 0;display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:12.5px;line-height:1.5;}
+  .risk-strengths h4{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px;opacity:.65;}
+  footer.note{padding:22px 32px 60px;font-size:11.5px;color:#7a7568;max-width:70ch;}
+</style>
+</head>
+<body>
+
+<header class="intro">
+  <h1>Design Direction Options — imdb-top-1000-films</h1>
+  <p>Three genuinely different ways to compose the "genre constellation" poster wall, built with real posters from the curated dataset (126-film sample, not the full 1000). This is a comparison tool for direction-choice only — not the final artifact. Hover any poster for its local title/year/director reveal.</p>
+</header>
+<nav class="jump">
+  <a href="#option-a">A · The Constellation</a>
+  <a href="#option-b">B · Genre Weave</a>
+  <a href="#option-c">C · Genre Broadsheet</a>
+</nav>
+
+<section class="opt" id="option-a">
+  <div class="opt-head">
+    <div>
+      <p class="eyebrow">Option A</p>
+      <h2>The Constellation</h2>
+      <p class="tagline">Genre acts as a gravitational cluster. Films with one genre sit tight around their cluster; films with several genres drift into the space between clusters they belong to, with faint threads showing the pull.</p>
+    </div>
+  </div>
+  <dl class="meta-grid">
+    <div><dt>Spatial archetype</dt><dd>Star field / constellation chart</dd></div>
+    <div><dt>Composition</dt><dd>Radial cluster field, dark ground</dd></div>
+    <div><dt>Interaction</dt><dd>Ambient scan, local hover reveal, slow drift</dd></div>
+    <div><dt>Rendering</dt><dd>Deterministic cluster-centroid placement + thin SVG connector lines (would move to Canvas + a real D3-force simulation at full 1000-record scale for performance)</dd></div>
+    <div><dt>Color temperature</dt><dd>Cold-neutral ink-black ground, warm paper-toned posters as the only light</dd></div>
+    <div><dt>Typographic attitude</dt><dd>Quiet italic star-chart labels, near-invisible until focused</dd></div>
+  </dl>
+  <div class="stage" id="stage-a"></div>
+  <div class="risk-strengths">
+    <div><h4>Strengths</h4>Multi-genre membership is structural, not captioned — a film visibly sits between its clusters. Most purely data-art of the three; abandons chart grammar entirely (position is emergent, not axis-encoded).</div>
+    <div><h4>Risks</h4>Needs real force-simulation + Canvas to stay legible and performant at 1000 records (SVG/DOM alone would strain). Dense middle ground between popular clusters (e.g. Drama-Crime-Thriller) could get crowded and needs deliberate collision handling.</div>
+  </div>
+</section>
+
+<section class="opt" id="option-b">
+  <div class="opt-head">
+    <div>
+      <p class="eyebrow">Option B</p>
+      <h2>Genre Weave</h2>
+      <p class="tagline">Genres run as physical threads through the composition. A film with two genres sits where its threads actually cross — the crossing point is the multi-genre fact, not a note about it.</p>
+    </div>
+  </div>
+  <dl class="meta-grid">
+    <div><dt>Spatial archetype</dt><dd>Woven lattice / textile notation</dd></div>
+    <div><dt>Composition</dt><dd>Warp/weft thread grid, warm archival ground</dd></div>
+    <div><dt>Interaction</dt><dd>Close reading along threads, local hover reveal</dd></div>
+    <div><dt>Rendering</dt><dd>SVG thread paths + deterministic intersection placement (stable, no simulation needed — would scale cleanly to 1000 records)</dd></div>
+    <div><dt>Color temperature</dt><dd>Warm bone/cream ground, ink-toned thread lines</dd></div>
+    <div><dt>Typographic attitude</dt><dd>Small-caps thread labels at the loom edge, archival-card register</dd></div>
+  </dl>
+  <div class="stage" id="stage-b"></div>
+  <div class="risk-strengths">
+    <div><h4>Strengths</h4>Multi-genre membership is the literal construction principle — the strongest, most honest answer to the Analyst's caveat of any option. Deterministic layout scales predictably to all 1000 records without a simulation.</div>
+    <div><h4>Risks</h4>Only handles two crossing genres cleanly; a third genre needs a secondary "stitch" mark, which is a real but weaker signal. Grid regularity could read as more chart-like than intended if thread lines are too prominent — needs restraint in stroke weight.</div>
+  </div>
+</section>
+
+<section class="opt" id="option-c">
+  <div class="opt-head">
+    <div>
+      <p class="eyebrow">Option C</p>
+      <h2>Genre Broadsheet</h2>
+      <p class="tagline">An editorial page, not a grid: Drama runs as the dominant lead spread, rarer genres sit as small marginal columns — the way a trade paper's front page varies story weight by importance, not a uniform layout.</p>
+    </div>
+  </div>
+  <dl class="meta-grid">
+    <div><dt>Spatial archetype</dt><dd>Broadsheet / trade-paper front page</dd></div>
+    <div><dt>Composition</dt><dd>Irregular editorial zones, sized by genre weight, newsprint ground</dd></div>
+    <div><dt>Interaction</dt><dd>Scan across zones, local hover reveal within each zone</dd></div>
+    <div><dt>Rendering</dt><dd>CSS grid with hand-set zone tiers (not an algorithmic treemap — sizing is editorially chosen, not strictly proportional, to avoid reading as a chart)</dd></div>
+    <div><dt>Color temperature</dt><dd>Warm newsprint gray ground, distinct from A's ink-black and B's cream</dd></div>
+    <div><dt>Typographic attitude</dt><dd>Bold serif section heads, masthead-weight hierarchy</dd></div>
+  </dl>
+  <div class="stage" id="stage-c">
+    <div class="broadsheet-grid" id="broadsheet-grid"></div>
+  </div>
+  <div class="risk-strengths">
+    <div><h4>Strengths</h4>Most legible/browsable of the three at a glance — the composition-led option requested for the set. Drama's real dominance becomes an intentional lead-story treatment instead of an accident.</div>
+    <div><h4>Risks</h4>Closest of the three to conventional editorial grid — needs deliberately irregular, hand-tuned zone sizing (not strict proportional area) to avoid reading as a disguised treemap chart. Duplicate "clipping" thumbnails for multi-genre films need restraint or the page gets visually noisy.</div>
+  </div>
+</section>
+
+<footer class="note">
+  Built from real curated data (poster thumbnails, titles, years, directors, genres) — this is a direction-comparison tool, not the final artifact. All three avoid dashboard/filter-chip UI, use only muted ink/paper tones (no accent hue), and keep genre labels as the source genre names verbatim, per the approved brief and narrative handoff.
+</footer>
+
+<script>
+const SAMPLE = [{"id":"m0001","title":"The Shawshank Redemption","year":1994,"director":"Frank Darabont","genres":["Drama"],"primary_genre":"Drama","imdb_rating":9.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"},{"id":"m0002","title":"The Godfather","year":1972,"director":"Francis Ford Coppola","genres":["Crime","Drama"],"primary_genre":"Crime","imdb_rating":9.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BM2MyNjYxNmUtYTAwNi00MTYxLWJmNWYtYzZlODY3ZTk3OTFlXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0003","title":"The Dark Knight","year":2008,"director":"Christopher Nolan","genres":["Action","Crime","Drama"],"primary_genre":"Action","imdb_rating":9,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_SX300.jpg"},{"id":"m0004","title":"The Godfather: Part II","year":1974,"director":"Francis Ford Coppola","genres":["Crime","Drama"],"primary_genre":"Crime","imdb_rating":9,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMWMwMGQzZTItY2JlNC00OWZiLWIyMDctNDk2ZDQ2YjRjMWQ0XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0005","title":"12 Angry Men","year":1957,"director":"Sidney Lumet","genres":["Crime","Drama"],"primary_genre":"Crime","imdb_rating":9,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMWU4N2FjNzYtNTVkNC00NzQ0LTg0MjAtYTJlMjFhNGUxZDFmXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_SX300.jpg"},{"id":"m0006","title":"The Lord of the Rings: The Return of the King","year":2003,"director":"Peter Jackson","genres":["Action","Adventure","Drama"],"primary_genre":"Action","imdb_rating":8.9,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNzA5ZDNlZWMtM2NhNS00NDJjLTk4NDItYTRmY2EwMWZlMTY3XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0020","title":"Gisaengchung","year":2019,"director":"Bong Joon Ho","genres":["Comedy","Drama","Thriller"],"primary_genre":"Comedy","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg"},{"id":"m0027","title":"La vita è bella","year":1997,"director":"Roberto Benigni","genres":["Comedy","Drama","Romance"],"primary_genre":"Comedy","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYmJmM2Q4NmMtYThmNC00ZjRlLWEyZmItZTIwOTBlZDQ3NTQ1XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg"},{"id":"m0036","title":"The Intouchables","year":2011,"director":"Olivier Nakache","genres":["Biography","Comedy","Drama"],"primary_genre":"Biography","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTYxNDA3MDQwNl5BMl5BanBnXkFtZTcwNTU4Mzc1Nw@@._V1_SX300.jpg"},{"id":"m0048","title":"Back to the Future","year":1985,"director":"Robert Zemeckis","genres":["Adventure","Comedy","Sci-Fi"],"primary_genre":"Adventure","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg"},{"id":"m0052","title":"Modern Times","year":1936,"director":"Charles Chaplin","genres":["Comedy","Drama","Family"],"primary_genre":"Comedy","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYjJiZjMzYzktNjU0NS00OTkxLWEwYzItYzdhYWJjN2QzMTRlL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0053","title":"City Lights","year":1931,"director":"Charles Chaplin","genres":["Comedy","Drama","Romance"],"primary_genre":"Comedy","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BY2I4MmM1N2EtM2YzOS00OWUzLTkzYzctNDc5NDg2N2IyODJmXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0007","title":"Pulp Fiction","year":1994,"director":"Quentin Tarantino","genres":["Crime","Drama"],"primary_genre":"Crime","imdb_rating":8.9,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNGNhMDIzZTUtNTBlZi00MTRlLWFjM2ItYzViMjE3YzI5MjljXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0016","title":"Goodfellas","year":1990,"director":"Martin Scorsese","genres":["Biography","Crime","Drama"],"primary_genre":"Biography","imdb_rating":8.7,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BY2NkZjEzMDgtN2RjYy00YzM1LWI4ZmQtMjIwYjFjNmI3ZGEwXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0023","title":"Cidade de Deus","year":2002,"director":"Fernando Meirelles","genres":["Crime","Drama"],"primary_genre":"Crime","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOTMwYjc5ZmItYTFjZC00ZGQ3LTlkNTMtMjZiNTZlMWQzNzI5XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0026","title":"The Green Mile","year":1999,"director":"Frank Darabont","genres":["Crime","Drama","Fantasy"],"primary_genre":"Crime","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTUxMzQyNjA5MF5BMl5BanBnXkFtZTYwOTU2NTY3._V1_SX300.jpg"},{"id":"m0028","title":"Se7en","year":1995,"director":"David Fincher","genres":["Crime","Drama","Mystery"],"primary_genre":"Crime","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOTUwODM5MTctZjczMi00OTk4LTg3NWUtNmVhMTAzNTNjYjcyXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0029","title":"The Silence of the Lambs","year":1991,"director":"Jonathan Demme","genres":["Crime","Drama","Thriller"],"primary_genre":"Crime","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNjNhZTk0ZmEtNjJhMi00YzFlLWE1MmEtYzM1M2ZmMGMwMTU4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0009","title":"Inception","year":2010,"director":"Christopher Nolan","genres":["Action","Adventure","Sci-Fi"],"primary_genre":"Action","imdb_rating":8.8,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg"},{"id":"m0011","title":"The Lord of the Rings: The Fellowship of the Ring","year":2001,"director":"Peter Jackson","genres":["Action","Adventure","Drama"],"primary_genre":"Action","imdb_rating":8.8,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BN2EyZjM3NzUtNWUzMi00MTgxLWI0NTctMzY4M2VlOTdjZWRiXkEyXkFqcGdeQXVyNDUzOTQ5MjY@._V1_SX300.jpg"},{"id":"m0014","title":"The Lord of the Rings: The Two Towers","year":2002,"director":"Peter Jackson","genres":["Action","Adventure","Drama"],"primary_genre":"Action","imdb_rating":8.7,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZGMxZTdjZmYtMmE2Ni00ZTdkLWI5NTgtNjlmMjBiNzU2MmI5XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0017","title":"Star Wars: Episode V - The Empire Strikes Back","year":1980,"director":"Irvin Kershner","genres":["Action","Adventure","Fantasy"],"primary_genre":"Action","imdb_rating":8.7,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYmU1NDRjNDgtMzhiMi00NjZmLTg5NGItZDNiZjU5NTU4OTE0XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0022","title":"Interstellar","year":2014,"director":"Christopher Nolan","genres":["Adventure","Drama","Sci-Fi"],"primary_genre":"Adventure","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"},{"id":"m0024","title":"Sen to Chihiro no kamikakushi","year":2001,"director":"Hayao Miyazaki","genres":["Animation","Adventure","Family"],"primary_genre":"Animation","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMjlmZmI5MDctNDE2YS00YWE0LWE5ZWItZDBhYWQ0NTcxNWRhXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"},{"id":"m0015","title":"The Matrix","year":1999,"director":"Lana Wachowski","genres":["Action","Sci-Fi"],"primary_genre":"Action","imdb_rating":8.7,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0030","title":"Star Wars","year":1977,"director":"George Lucas","genres":["Action","Adventure","Fantasy"],"primary_genre":"Action","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNzVlY2MwMjktM2E4OS00Y2Y3LWE3ZjctYzhkZGM3YzA1ZWM2XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0031","title":"Seppuku","year":1962,"director":"Masaki Kobayashi","genres":["Action","Drama","Mystery"],"primary_genre":"Action","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYjBmYTQ1NjItZWU5MS00YjI0LTg2OTYtYmFkN2JkMmNiNWVkXkEyXkFqcGdeQXVyMTMxMTY0OTQ@._V1_SX300.jpg"},{"id":"m0032","title":"Shichinin no samurai","year":1954,"director":"Akira Kurosawa","genres":["Action","Adventure","Drama"],"primary_genre":"Action","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOWE4ZDdhNmMtNzE5ZC00NzExLTlhNGMtY2ZhYjYzODEzODA1XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_SX300.jpg"},{"id":"m0040","title":"Gladiator","year":2000,"director":"Ridley Scott","genres":["Action","Adventure","Drama"],"primary_genre":"Action","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMDliMmNhNDEtODUyOS00MjNlLTgxODEtN2U3NzIxMGVkZTA1L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0043","title":"Léon","year":1994,"director":"Luc Besson","genres":["Action","Crime","Drama"],"primary_genre":"Action","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BODllNWE0MmEtYjUwZi00ZjY3LThmNmQtZjZlMjI2YTZjYmQ0XkEyXkFqcGdeQXVyNTc1NTQxODI@._V1_SX300.jpg"},{"id":"m0034","title":"Joker","year":2019,"director":"Todd Phillips","genres":["Crime","Drama","Thriller"],"primary_genre":"Crime","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNGVjNWI4ZGUtNzE0MS00YTJmLWE0ZDctN2ZiYTk2YmI3NTYyXkEyXkFqcGdeQXVyMTkxNjUyNQ@@._V1_SX300.jpg"},{"id":"m0038","title":"The Departed","year":2006,"director":"Martin Scorsese","genres":["Crime","Drama","Thriller"],"primary_genre":"Crime","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTI1MTY2OTIxNV5BMl5BanBnXkFtZTYwNjQ4NjY3._V1_SX300.jpg"},{"id":"m0042","title":"The Usual Suspects","year":1995,"director":"Bryan Singer","genres":["Crime","Mystery","Thriller"],"primary_genre":"Crime","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYTViNjMyNmUtNDFkNC00ZDRlLThmMDUtZDU2YWE4NGI2ZjVmXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0050","title":"Psycho","year":1960,"director":"Alfred Hitchcock","genres":["Horror","Mystery","Thriller"],"primary_genre":"Horror","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNTQwNDM1YzItNDAxZC00NWY2LTk0M2UtNDIwNWI5OGUyNWUxXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0068","title":"The Lives of Others","year":2006,"director":"Florian Henckel von Donnersmarck","genres":["Drama","Mystery","Thriller"],"primary_genre":"Drama","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOThkM2EzYmMtNDE3NS00NjlhLTg4YzktYTdhNzgyOWY3ZDYzXkEyXkFqcGdeQXVyNzQzNzQxNzI@._V1_SX300.jpg"},{"id":"m0070","title":"Memento","year":2000,"director":"Christopher Nolan","genres":["Mystery","Thriller"],"primary_genre":"Mystery","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZTcyNjk1MjgtOWI3Mi00YzQwLWI5MTktMzY4ZmI2NDAyNzYzXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0012","title":"Forrest Gump","year":1994,"director":"Robert Zemeckis","genres":["Drama","Romance"],"primary_genre":"Drama","imdb_rating":8.8,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNWIwODRlZTUtY2U3ZS00Yzg1LWJhNzYtMmZiYmEyNmU1NjMzXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg"},{"id":"m0046","title":"Nuovo Cinema Paradiso","year":1988,"director":"Giuseppe Tornatore","genres":["Drama","Romance"],"primary_genre":"Drama","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BM2FhYjEyYmYtMDI1Yy00YTdlLWI2NWQtYmEzNzAxOGY1NjY2XkEyXkFqcGdeQXVyNTA3NTIyNDg@._V1_SX300.jpg"},{"id":"m0051","title":"Casablanca","year":1942,"director":"Michael Curtiz","genres":["Drama","Romance","War"],"primary_genre":"Drama","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BY2IzZGY2YmEtYzljNS00NTM5LTgwMzUtMzM1NjQ4NGI0OTk0XkEyXkFqcGdeQXVyNDYyMDk5MTU@._V1_SX300.jpg"},{"id":"m0095","title":"Eternal Sunshine of the Spotless Mind","year":2004,"director":"Michel Gondry","genres":["Drama","Romance","Sci-Fi"],"primary_genre":"Drama","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTY4NzcwODg3Nl5BMl5BanBnXkFtZTcwNTEwOTMyMw@@._V1_SX300.jpg"},{"id":"m0096","title":"Amélie","year":2001,"director":"Jean-Pierre Jeunet","genres":["Comedy","Romance"],"primary_genre":"Comedy","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNDg4NjM1YjMtYmNhZC00MjM0LWFiZmYtNGY1YjA3MzZmODc5XkEyXkFqcGdeQXVyNDk3NzU2MTQ@._V1_SX300.jpg"},{"id":"m0100","title":"Good Will Hunting","year":1997,"director":"Gus Van Sant","genres":["Drama","Romance"],"primary_genre":"Drama","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOTI0MzcxMTYtZDVkMy00NjY1LTgyMTYtZmUxN2M3NmQ2NWJhXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg"},{"id":"m0008","title":"Schindler's List","year":1993,"director":"Steven Spielberg","genres":["Biography","Drama","History"],"primary_genre":"Biography","imdb_rating":8.9,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNDE4OTMxMTctNmRhYy00NWE2LTg3YzItYTk3M2UwOTU5Njg4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0019","title":"Hamilton","year":2020,"director":"Thomas Kail","genres":["Biography","Drama","History"],"primary_genre":"Biography","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNjViNWRjYWEtZTI0NC00N2E3LTk0NGQtMjY4NTM3OGNkZjY0XkEyXkFqcGdeQXVyMjUxMTY3ODM@._V1_SX300.jpg"},{"id":"m0039","title":"The Pianist","year":2002,"director":"Roman Polanski","genres":["Biography","Drama","Music"],"primary_genre":"Biography","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOWRiZDIxZjktMTA1NC00MDQ2LWEzMjUtMTliZmY3NjQ3ODJiXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0055","title":"Ayla: The Daughter of War","year":2017,"director":"Can Ulkay","genres":["Biography","Drama","History"],"primary_genre":"Biography","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNWJhMDlmZGUtYzcxNS00NDRiLWIwNjktNDY1Mjg3ZjBkYzY0XkEyXkFqcGdeQXVyMTU4MjUwMjI@._V1_SX300.jpg"},{"id":"m0058","title":"Dangal","year":2016,"director":"Nitesh Tiwari","genres":["Action","Biography","Drama"],"primary_genre":"Action","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTQ4MzQzMzM2Nl5BMl5BanBnXkFtZTgwMTQ1NzU3MDI@._V1_SX300.jpg"},{"id":"m0103","title":"Braveheart","year":1995,"director":"Mel Gibson","genres":["Biography","Drama","History"],"primary_genre":"Biography","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMzkzMmU0YTYtOWM3My00YzBmLWI0YzctOGYyNTkwMWE5MTJkXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0037","title":"The Prestige","year":2006,"director":"Christopher Nolan","genres":["Drama","Mystery","Sci-Fi"],"primary_genre":"Drama","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMjA4NDI0MTIxNF5BMl5BanBnXkFtZTYwNTM0MzY2._V1_SX300.jpg"},{"id":"m0069","title":"Oldeuboi","year":2003,"director":"Chan-wook Park","genres":["Action","Drama","Mystery"],"primary_genre":"Action","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTI3NTQyMzU5M15BMl5BanBnXkFtZTcwMTM2MjgyMQ@@._V1_SX300.jpg"},{"id":"m0075","title":"Apocalypse Now","year":1979,"director":"Francis Ford Coppola","genres":["Drama","Mystery","War"],"primary_genre":"Drama","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMDdhODg0MjYtYzBiOS00ZmI5LWEwZGYtZDEyNDU4MmQyNzFkXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0078","title":"Tengoku to jigoku","year":1963,"director":"Akira Kurosawa","genres":["Crime","Drama","Mystery"],"primary_genre":"Crime","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOTI4NTNhZDMtMWNkZi00MTRmLWJmZDQtMmJkMGVmZTEzODlhXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_SX300.jpg"},{"id":"m0080","title":"Witness for the Prosecution","year":1957,"director":"Billy Wilder","genres":["Crime","Drama","Mystery"],"primary_genre":"Crime","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNDQwODU5OWYtNDcyNi00MDQ1LThiOGMtZDkwNWJiM2Y3MDg0XkEyXkFqcGdeQXVyMDI2NDg0NQ@@._V1_SX300.jpg"},{"id":"m0082","title":"Rear Window","year":1954,"director":"Alfred Hitchcock","genres":["Mystery","Thriller"],"primary_genre":"Mystery","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNGUxYWM3M2MtMGM3Mi00ZmRiLWE0NGQtZjE5ODI2OTJhNTU0XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg"},{"id":"m0044","title":"The Lion King","year":1994,"director":"Roger Allers","genres":["Animation","Adventure","Drama"],"primary_genre":"Animation","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYTYxNGMyZTYtMjE3MS00MzNjLWFjNmYtMDk3N2FmM2JiM2M1XkEyXkFqcGdeQXVyNjY5NDU4NzI@._V1_SX300.jpg"},{"id":"m0047","title":"Hotaru no haka","year":1988,"director":"Isao Takahata","genres":["Animation","Drama","War"],"primary_genre":"Animation","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZmY2NjUzNDQtNTgxNC00M2Q4LTljOWQtMjNjNDBjNWUxNmJlXkEyXkFqcGdeQXVyNTA4NzY1MzY@._V1_SX300.jpg"},{"id":"m0057","title":"Kimi no na wa.","year":2016,"director":"Makoto Shinkai","genres":["Animation","Drama","Fantasy"],"primary_genre":"Animation","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BODRmZDVmNzUtZDA4ZC00NjhkLWI2M2UtN2M0ZDIzNDcxYThjL2ltYWdlXkEyXkFqcGdeQXVyNTk0MzMzODA@._V1_SX300.jpg"},{"id":"m0059","title":"Spider-Man: Into the Spider-Verse","year":2018,"director":"Bob Persichetti","genres":["Animation","Action","Adventure"],"primary_genre":"Animation","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMjMwNDkxMTgzOF5BMl5BanBnXkFtZTgwNTkwNTQ3NjM@._V1_SX300.jpg"},{"id":"m0062","title":"Coco","year":2017,"director":"Lee Unkrich","genres":["Animation","Adventure","Family"],"primary_genre":"Animation","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYjQ5NjM0Y2YtNjZkNC00ZDhkLWJjMWItN2QyNzFkMDE3ZjAxXkEyXkFqcGdeQXVyODIxMzk5NjA@._V1_SX300.jpg"},{"id":"m0067","title":"WALL·E","year":2008,"director":"Andrew Stanton","genres":["Animation","Adventure","Family"],"primary_genre":"Animation","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMjExMTg5OTU0NF5BMl5BanBnXkFtZTcwMjMxMzMzMw@@._V1_SX300.jpg"},{"id":"m0045","title":"Terminator 2: Judgment Day","year":1991,"director":"James Cameron","genres":["Action","Sci-Fi"],"primary_genre":"Action","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMGU2NzRmZjUtOGUxYS00ZjdjLWEwZWItY2NlM2JhNjkxNTFmXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0061","title":"Avengers: Infinity War","year":2018,"director":"Anthony Russo","genres":["Action","Adventure","Sci-Fi"],"primary_genre":"Action","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMjMxNjY2MDU1OV5BMl5BanBnXkFtZTgwNzY1MTUwNTM@._V1_SX300.jpg"},{"id":"m0076","title":"Alien","year":1979,"director":"Ridley Scott","genres":["Horror","Sci-Fi"],"primary_genre":"Horror","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMmQ2MmU3NzktZjAxOC00ZDZhLTk4YzEtMDMyMzcxY2IwMDAyXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0107","title":"Aliens","year":1986,"director":"James Cameron","genres":["Action","Adventure","Sci-Fi"],"primary_genre":"Action","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZGU2OGY5ZTYtMWNhYy00NjZiLWI0NjUtZmNhY2JhNDRmODU3XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0114","title":"A Clockwork Orange","year":1971,"director":"Stanley Kubrick","genres":["Crime","Drama","Sci-Fi"],"primary_genre":"Crime","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTY3MjM1Mzc4N15BMl5BanBnXkFtZTgwODM0NzAxMDE@._V1_SX300.jpg"},{"id":"m0115","title":"2001: A Space Odyssey","year":1968,"director":"Stanley Kubrick","genres":["Adventure","Sci-Fi"],"primary_genre":"Adventure","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMmNlYzRiNDctZWNhMi00MzI4LThkZTctMTUzMmZkMmFmNThmXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0033","title":"It's a Wonderful Life","year":1946,"director":"Frank Capra","genres":["Drama","Family","Fantasy"],"primary_genre":"Drama","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZjc4NDZhZWMtNGEzYS00ZWU2LThlM2ItNTA0YzQ0OTExMTE2XkEyXkFqcGdeQXVyNjUwMzI2NzU@._V1_SX300.jpg"},{"id":"m0086","title":"Tumbbad","year":2018,"director":"Rahi Anil Barve","genres":["Drama","Fantasy","Horror"],"primary_genre":"Drama","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYmQxNmU4ZjgtYzE5Mi00ZDlhLTlhOTctMzJkNjk2ZGUyZGEwXkEyXkFqcGdeQXVyMzgxMDA0Nzk@._V1_SX300.jpg"},{"id":"m0110","title":"Star Wars: Episode VI - Return of the Jedi","year":1983,"director":"Richard Marquand","genres":["Action","Adventure","Fantasy"],"primary_genre":"Action","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOWZlMjFiYzgtMTUzNC00Y2IzLTk1NTMtZmNhMTczNTk0ODk1XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_SX300.jpg"},{"id":"m0151","title":"Pan's Labyrinth","year":2006,"director":"Guillermo del Toro","genres":["Drama","Fantasy","War"],"primary_genre":"Drama","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTU3ODg2NjQ5NF5BMl5BanBnXkFtZTcwMDEwODgzMQ@@._V1_SX300.jpg"},{"id":"m0171","title":"Tonari no Totoro","year":1988,"director":"Hayao Miyazaki","genres":["Animation","Family","Fantasy"],"primary_genre":"Animation","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYzJjMTYyMjQtZDI0My00ZjE2LTkyNGYtOTllNGQxNDMyZjE0XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"},{"id":"m0179","title":"Monty Python and the Holy Grail","year":1975,"director":"Terry Gilliam","genres":["Adventure","Comedy","Fantasy"],"primary_genre":"Adventure","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BN2IyNTE4YzUtZWU0Mi00MGIwLTgyMmQtMzQ4YzQxYWNlYWE2XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0108","title":"Amadeus","year":1984,"director":"Milos Forman","genres":["Biography","Drama","History"],"primary_genre":"Biography","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNWJlNzUzNGMtYTAwMS00ZjI2LWFmNWQtODcxNWUxODA5YmU1XkEyXkFqcGdeQXVyNTIzOTk5ODM@._V1_SX300.jpg"},{"id":"m0158","title":"Der Untergang","year":2004,"director":"Oliver Hirschbiegel","genres":["Biography","Drama","History"],"primary_genre":"Biography","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTU0NTU5NTAyMl5BMl5BanBnXkFtZTYwNzYwMDg2._V1_SX300.jpg"},{"id":"m0177","title":"The Message","year":1976,"director":"Moustapha Akkad","genres":["Biography","Drama","History"],"primary_genre":"Biography","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMjk3YjJmYTctMTAzZC00MzE4LWFlZGMtNDM5OTMyMDEzZWIxXkEyXkFqcGdeQXVyNTI4MjkwNjA@._V1_SX300.jpg"},{"id":"m0180","title":"The Great Escape","year":1963,"director":"John Sturges","genres":["Adventure","Drama","History"],"primary_genre":"Adventure","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNzA2NmYxMWUtNzBlMC00MWM2LTkwNmQtYTFlZjQwODNhOWE0XkEyXkFqcGdeQXVyNTIzOTk5ODM@._V1_SX300.jpg"},{"id":"m0186","title":"Det sjunde inseglet","year":1957,"director":"Ingmar Bergman","genres":["Drama","Fantasy","History"],"primary_genre":"Drama","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BM2I1ZWU4YjMtYzU0My00YmMzLWFmNTAtZDJhZGYwMmI3YWQ5XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0213","title":"Hacksaw Ridge","year":2016,"director":"Mel Gibson","genres":["Biography","Drama","History"],"primary_genre":"Biography","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMjQ1NjM3MTUxNV5BMl5BanBnXkFtZTgwMDc5MTY5OTE@._V1_SX300.jpg"},{"id":"m0066","title":"Taare Zameen Par","year":2007,"director":"Aamir Khan","genres":["Drama","Family"],"primary_genre":"Drama","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMDhjZWViN2MtNzgxOS00NmI4LThiZDQtZDI3MzM4MDE4NTc0XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"},{"id":"m0093","title":"Babam ve Oglum","year":2005,"director":"Çagan Irmak","genres":["Drama","Family"],"primary_genre":"Drama","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNjAzMzEwYzctNjc1MC00Nzg5LWFmMGItMTgzYmMyNTY2OTQ4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0101","title":"Bacheha-Ye aseman","year":1997,"director":"Majid Majidi","genres":["Drama","Family","Sport"],"primary_genre":"Drama","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZTYwZWQ4ZTQtZWU0MS00N2YwLWEzMDItZWFkZWY0MWVjODVhXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0128","title":"The Kid","year":1921,"director":"Charles Chaplin","genres":["Comedy","Drama","Family"],"primary_genre":"Comedy","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZjhhMThhNDItNTY2MC00MmU1LTliNDEtNDdhZjdlNTY5ZDQ1XkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_SX300.jpg"},{"id":"m0149","title":"Chak De! India","year":2007,"director":"Shimit Amin","genres":["Drama","Family","Sport"],"primary_genre":"Drama","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTUzODMyNzk4NV5BMl5BanBnXkFtZTgwNTk1NTYyNTM@._V1_SX300.jpg"},{"id":"m0159","title":"Hauru no ugoku shiro","year":2004,"director":"Hayao Miyazaki","genres":["Animation","Adventure","Family"],"primary_genre":"Animation","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNmM4YTFmMmItMGE3Yy00MmRkLTlmZGEtMzZlOTQzYjk3MzA2XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"},{"id":"m0025","title":"Saving Private Ryan","year":1998,"director":"Steven Spielberg","genres":["Drama","War"],"primary_genre":"Drama","imdb_rating":8.6,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZjhkMDM4MWItZTVjOC00ZDRhLThmYTAtM2I5NzBmNmNlMzI1XkEyXkFqcGdeQXVyNDYyMDk5MTU@._V1_SX300.jpg"},{"id":"m0081","title":"Paths of Glory","year":1957,"director":"Stanley Kubrick","genres":["Drama","War"],"primary_genre":"Drama","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNjViMmRkOTEtM2ViOS00ODg0LWJhYWEtNTBlOGQxNDczOGY3XkEyXkFqcGdeQXVyMDI2NDg0NQ@@._V1_SX300.jpg"},{"id":"m0084","title":"The Great Dictator","year":1940,"director":"Charles Chaplin","genres":["Comedy","Drama","War"],"primary_genre":"Comedy","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMmExYWJjNTktNGUyZS00ODhmLTkxYzAtNWIzOGEyMGNiMmUwXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0085","title":"1917","year":2019,"director":"Sam Mendes","genres":["Drama","Thriller","War"],"primary_genre":"Drama","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOTdmNTFjNDEtNzg0My00ZjkxLTg1ZDAtZTdkMDc2ZmFiNWQ1XkEyXkFqcGdeQXVyNTAzNzgwNTg@._V1_SX300.jpg"},{"id":"m0091","title":"Incendies","year":2010,"director":"Denis Villeneuve","genres":["Drama","Mystery","War"],"primary_genre":"Drama","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMWE3MGYzZjktY2Q5Mi00Y2NiLWIyYWUtMmIyNzA3YmZlMGFhXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"},{"id":"m0094","title":"Inglourious Basterds","year":2009,"director":"Quentin Tarantino","genres":["Adventure","Drama","War"],"primary_genre":"Adventure","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOTJiNDEzOWYtMTVjOC00ZjlmLWE0NGMtZmE1OWVmZDQ2OWJhXkEyXkFqcGdeQXVyNTIzOTk5ODM@._V1_SX300.jpg"},{"id":"m0035","title":"Whiplash","year":2014,"director":"Damien Chazelle","genres":["Drama","Music"],"primary_genre":"Drama","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOTA5NDZlZGUtMjAxOS00YTRkLTkwYmMtYWQ0NWEwZDZiNjEzXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"},{"id":"m0087","title":"Andhadhun","year":2018,"director":"Sriram Raghavan","genres":["Crime","Drama","Music"],"primary_genre":"Crime","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZWZhMjhhZmYtOTIzOC00MGYzLWI1OGYtM2ZkN2IxNTI4ZWI3XkEyXkFqcGdeQXVyNDAzNDk0MTQ@._V1_SX300.jpg"},{"id":"m0176","title":"Höstsonaten","year":1978,"director":"Ingmar Bergman","genres":["Drama","Music"],"primary_genre":"Drama","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNGIyMWRlYTctMWNlMi00ZGIzLThjOTgtZjQzZjRjNmRhMDdlXkEyXkFqcGdeQXVyMTAwMzUyOTc@._V1_SX300.jpg"},{"id":"m0184","title":"Some Like It Hot","year":1959,"director":"Billy Wilder","genres":["Comedy","Music","Romance"],"primary_genre":"Comedy","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNzAyOGIxYjAtMGY2NC00ZTgyLWIwMWEtYzY0OWQ4NDFjOTc5XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0228","title":"Okuribito","year":2008,"director":"Yôjirô Takita","genres":["Drama","Music"],"primary_genre":"Drama","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTUzOTcwOTA2NV5BMl5BanBnXkFtZTcwNDczMzczMg@@._V1_SX300.jpg"},{"id":"m0250","title":"La leggenda del pianista sull'oceano","year":1998,"director":"Giuseppe Tornatore","genres":["Drama","Music","Romance"],"primary_genre":"Drama","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMzIwOTdmNjQtOWQ1ZS00ZWQ4LWIxYTMtOWFkM2NjODJiMGY4L2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyNTI4MjkwNjA@._V1_SX300.jpg"},{"id":"m0074","title":"The Shining","year":1980,"director":"Stanley Kubrick","genres":["Drama","Horror"],"primary_genre":"Drama","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZWFlYmY2MGEtZjVkYS00YzU4LTg0YjQtYzY1ZGE3NTA5NGQxXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg"},{"id":"m0272","title":"The Thing","year":1982,"director":"John Carpenter","genres":["Horror","Mystery","Sci-Fi"],"primary_genre":"Horror","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNGViZWZmM2EtNGYzZi00ZDAyLTk3ODMtNzIyZTBjN2Y1NmM1XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_SX300.jpg"},{"id":"m0294","title":"What Ever Happened to Baby Jane?","year":1962,"director":"Robert Aldrich","genres":["Drama","Horror","Thriller"],"primary_genre":"Drama","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZmI0M2VmNTgtMWVhYS00Zjg1LTk1YTYtNmJmMjRkZmMwYTc2XkEyXkFqcGdeQXVyNTA4NzY1MzY@._V1_SX300.jpg"},{"id":"m0322","title":"Das Cabinet des Dr. Caligari","year":1920,"director":"Robert Wiene","genres":["Fantasy","Horror","Mystery"],"primary_genre":"Fantasy","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNWJiNGJiMTEtMGM3OC00ZWNlLTgwZTgtMzdhNTRiZjk5MTQ1XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg"},{"id":"m0420","title":"The Exorcist","year":1973,"director":"William Friedkin","genres":["Horror"],"primary_genre":"Horror","imdb_rating":8,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYjhmMGMxZDYtMTkyNy00YWVmLTgyYmUtYTU3ZjcwNTBjN2I1XkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0426","title":"Rosemary's Baby","year":1968,"director":"Roman Polanski","genres":["Drama","Horror"],"primary_genre":"Drama","imdb_rating":8,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZmEwZGU2NzctYzlmNi00MGJkLWE3N2MtYjBlN2ZhMGJkZTZiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg"},{"id":"m0013","title":"Il buono, il brutto, il cattivo","year":1966,"director":"Sergio Leone","genres":["Western"],"primary_genre":"Western","imdb_rating":8.8,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOTQ5NDI3MTI4MF5BMl5BanBnXkFtZTgwNDQ4ODE5MDE@._V1_SX300.jpg"},{"id":"m0049","title":"Once Upon a Time in the West","year":1968,"director":"Sergio Leone","genres":["Western"],"primary_genre":"Western","imdb_rating":8.5,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZGI5MjBmYzYtMzJhZi00NGI1LTk3MzItYjBjMzcxM2U3MDdiXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0063","title":"Django Unchained","year":2012,"director":"Quentin Tarantino","genres":["Drama","Western"],"primary_genre":"Drama","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMjIyNTQ5NjQ1OV5BMl5BanBnXkFtZTcwODg1MDU4OA@@._V1_SX300.jpg"},{"id":"m0116","title":"Per qualche dollaro in più","year":1965,"director":"Sergio Leone","genres":["Western"],"primary_genre":"Western","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNWM1NmYyM2ItMTFhNy00NDU0LThlYWUtYjQyYTJmOTY0ZmM0XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0168","title":"Unforgiven","year":1992,"director":"Clint Eastwood","genres":["Drama","Western"],"primary_genre":"Drama","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BODM3YWY4NmQtN2Y3Ni00OTg0LWFhZGQtZWE3ZWY4MTJlOWU4XkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0192","title":"The Treasure of the Sierra Madre","year":1948,"director":"John Huston","genres":["Adventure","Drama","Western"],"primary_genre":"Adventure","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOTJlZWMxYzEtMjlkMS00ODE0LThlM2ItMDI3NGQ2YjhmMzkxXkEyXkFqcGdeQXVyMDI2NDg0NQ@@._V1_SX300.jpg"},{"id":"m0083","title":"Sunset Blvd.","year":1950,"director":"Billy Wilder","genres":["Drama","Film-Noir"],"primary_genre":"Drama","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTU0NTkyNzYwMF5BMl5BanBnXkFtZTgwMDU0NDk5MTI@._V1_SX300.jpg"},{"id":"m0124","title":"Double Indemnity","year":1944,"director":"Billy Wilder","genres":["Crime","Drama","Film-Noir"],"primary_genre":"Crime","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOTdlNjgyZGUtOTczYi00MDdhLTljZmMtYTEwZmRiOWFkYjRhXkEyXkFqcGdeQXVyNDY2MTk1ODk@._V1_SX300.jpg"},{"id":"m0308","title":"Ace in the Hole","year":1951,"director":"Billy Wilder","genres":["Drama","Film-Noir"],"primary_genre":"Drama","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNDUzZjlhZTYtN2E5MS00ODQ3LWI1ZjgtNzdiZmI0NTZiZTljXkEyXkFqcGdeQXVyMjI4MjA5MzA@._V1_SX300.jpg"},{"id":"m0310","title":"The Third Man","year":1949,"director":"Carol Reed","genres":["Film-Noir","Mystery","Thriller"],"primary_genre":"Film-Noir","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYjE2OTdhMWUtOGJlMy00ZDViLWIzZjgtYjZkZGZmMDZjYmEyXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0439","title":"Touch of Evil","year":1958,"director":"Orson Welles","genres":["Crime","Drama","Film-Noir"],"primary_genre":"Crime","imdb_rating":8,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BOTA1MjA3M2EtMmJjZS00OWViLTkwMTEtM2E5ZDk0NTAyNGJiXkEyXkFqcGdeQXVyNzkwMjQ5NzM@._V1_SX300.jpg"},{"id":"m0441","title":"Sweet Smell of Success","year":1957,"director":"Alexander Mackendrick","genres":["Drama","Film-Noir"],"primary_genre":"Drama","imdb_rating":8,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMjE5NTU3YWYtOWIxNi00YWZhLTg2NzktYzVjZWY5MDQ4NzVlXkEyXkFqcGdeQXVyNjc1NTYyMjg@._V1_SX300.jpg"},{"id":"m0140","title":"Bhaag Milkha Bhaag","year":2013,"director":"Rakeysh Omprakash Mehra","genres":["Biography","Drama","Sport"],"primary_genre":"Biography","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTY1Nzg4MjcwN15BMl5BanBnXkFtZTcwOTc1NTk1OQ@@._V1_SX300.jpg"},{"id":"m0145","title":"Warrior","year":2011,"director":"Gavin O'Connor","genres":["Action","Drama","Sport"],"primary_genre":"Action","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTk4ODk5MTMyNV5BMl5BanBnXkFtZTcwMDMyNTg0Ng@@._V1_SX300.jpg"},{"id":"m0174","title":"Raging Bull","year":1980,"director":"Martin Scorsese","genres":["Biography","Drama","Sport"],"primary_genre":"Biography","imdb_rating":8.2,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYjRmODkzNDItMTNhNi00YjJlLTg0ZjAtODlhZTM0YzgzYThlXkEyXkFqcGdeQXVyNzQ1ODk3MTQ@._V1_SX300.jpg"},{"id":"m0235","title":"Million Dollar Baby","year":2004,"director":"Clint Eastwood","genres":["Drama","Sport"],"primary_genre":"Drama","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTkxNzA1NDQxOV5BMl5BanBnXkFtZTcwNTkyMTIzMw@@._V1_SX300.jpg"},{"id":"m0253","title":"The Big Lebowski","year":1998,"director":"Joel Coen","genres":["Comedy","Crime","Sport"],"primary_genre":"Comedy","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTQ0NjUzMDMyOF5BMl5BanBnXkFtZTgwODA1OTU0MDE@._V1_SX300.jpg"},{"id":"m0280","title":"Rocky","year":1976,"director":"John G. Avildsen","genres":["Drama","Sport"],"primary_genre":"Drama","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTY5MDMzODUyOF5BMl5BanBnXkFtZTcwMTQ3NTMyNA@@._V1_SX300.jpg"},{"id":"m0077","title":"Anand","year":1971,"director":"Hrishikesh Mukherjee","genres":["Drama","Musical"],"primary_genre":"Drama","imdb_rating":8.4,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYmYzNmM2MDctZGY3Yi00NjRiLWIxZjctYjgzYTcxYTNhYTMyXkEyXkFqcGdeQXVyMjUxMTY3ODM@._V1_SX300.jpg"},{"id":"m0121","title":"Singin' in the Rain","year":1952,"director":"Stanley Donen","genres":["Comedy","Musical","Romance"],"primary_genre":"Comedy","imdb_rating":8.3,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BZDRjNGViMjQtOThlMi00MTA3LThkYzQtNzJkYjBkMGE0YzE1XkEyXkFqcGdeQXVyNDYyMDk5MTU@._V1_SX300.jpg"},{"id":"m0208","title":"PK","year":2014,"director":"Rajkumar Hirani","genres":["Comedy","Drama","Musical"],"primary_genre":"Comedy","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMTYzOTE2NjkxN15BMl5BanBnXkFtZTgwMDgzMTg0MzE@._V1_SX300.jpg"},{"id":"m0239","title":"Munna Bhai M.B.B.S.","year":2003,"director":"Rajkumar Hirani","genres":["Comedy","Drama","Musical"],"primary_genre":"Comedy","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BMzQ4MTBlYTQtMzJkYS00OGNjLTk1MWYtNzQ0OTQ0OWEyOWU1XkEyXkFqcGdeQXVyNDgyODgxNjE@._V1_SX300.jpg"},{"id":"m0248","title":"Lagaan: Once Upon a Time in India","year":2001,"director":"Ashutosh Gowariker","genres":["Adventure","Drama","Musical"],"primary_genre":"Adventure","imdb_rating":8.1,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BNDYxNWUzZmYtOGQxMC00MTdkLTkxOTctYzkyOGIwNWQxZjhmXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg"},{"id":"m0375","title":"Kal Ho Naa Ho","year":2003,"director":"Nikkhil Advani","genres":["Comedy","Drama","Musical"],"primary_genre":"Comedy","imdb_rating":8,"poster_url_thumb":"https://m.media-amazon.com/images/M/MV5BYmVjNDIxODAtNWZiZi00ZDBlLWJmOTUtNDNjMGExNTViMzE1XkEyXkFqcGdeQXVyNTE0MDc0NTM@._V1_SX300.jpg"}];
+const GENRE_ORDER = ["Drama","Comedy","Crime","Adventure","Action","Thriller","Romance","Biography","Mystery","Animation","Sci-Fi","Fantasy","History","Family","War","Music","Horror","Western","Film-Noir","Sport","Musical"];
+
+function seededRandom(seed){
+  let h = 0;
+  for (let i=0;i<seed.length;i++){ h = (h*31 + seed.charCodeAt(i)) | 0; }
+  return function(){
+    h = (h * 1664525 + 1013904223) | 0;
+    return ((h >>> 0) / 4294967296);
+  };
+}
+
+function mkImg(film, w, h){
+  const img = document.createElement('img');
+  img.src = film.poster_url_thumb;
+  img.alt = film.title;
+  img.loading = 'lazy';
+  img.style.width = w + 'px';
+  img.style.height = h + 'px';
+  img.onerror = function(){
+    // styled fallback, matching brief: title/year/director, no error text
+    const card = document.createElement('div');
+    card.style.width = w + 'px';
+    card.style.height = h + 'px';
+    card.style.display = 'flex';
+    card.style.alignItems = 'center';
+    card.style.justifyContent = 'center';
+    card.style.textAlign = 'center';
+    card.style.fontSize = '7px';
+    card.style.lineHeight = '1.2';
+    card.style.padding = '2px';
+    card.style.background = '#3a352b';
+    card.style.color = '#d8d2c0';
+    card.style.borderRadius = '2px';
+    card.textContent = film.title;
+    img.replaceWith(card);
+  };
+  return img;
+}
+
+function attachLabel(wrap, film){
+  wrap.addEventListener('mouseenter', () => {
+    let lbl = wrap.querySelector('.film-label');
+    if (!lbl){
+      lbl = document.createElement('div');
+      lbl.className = 'film-label';
+      lbl.textContent = film.title + ' · ' + film.year + ' · ' + film.director;
+      wrap.appendChild(lbl);
+    }
+    lbl.style.opacity = '1';
+    lbl.style.left = '0';
+    lbl.style.top = '105%';
+  });
+  wrap.addEventListener('mouseleave', () => {
+    const lbl = wrap.querySelector('.film-label');
+    if (lbl) lbl.style.opacity = '0';
+  });
+}
+
+/* ---------- Option A: Constellation ---------- */
+function buildConstellation(){
+  const stage = document.getElementById('stage-a');
+  const W = stage.clientWidth, H = stage.clientHeight;
+  const cx = W/2, cy = H/2, R = Math.min(W,H)*0.40;
+  const centers = {};
+  GENRE_ORDER.forEach((g,i) => {
+    const a = (i / GENRE_ORDER.length) * Math.PI * 2 - Math.PI/2;
+    centers[g] = { x: cx + Math.cos(a)*R, y: cy + Math.sin(a)*R };
+  });
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  stage.appendChild(svg);
+
+  GENRE_ORDER.forEach(g => {
+    const tag = document.createElement('div');
+    tag.className = 'genre-tag';
+    tag.textContent = g;
+    tag.style.left = centers[g].x + 'px';
+    tag.style.top = centers[g].y + 'px';
+    stage.appendChild(tag);
+  });
+
+  SAMPLE.forEach(film => {
+    const rnd = seededRandom(film.id);
+    const pts = film.genres.filter(g => centers[g]).map(g => centers[g]);
+    if (!pts.length) return;
+    const mx = pts.reduce((s,p)=>s+p.x,0)/pts.length;
+    const my = pts.reduce((s,p)=>s+p.y,0)/pts.length;
+    const jx = (rnd()-0.5) * 46;
+    const jy = (rnd()-0.5) * 46;
+    const x = mx + jx, y = my + jy;
+
+    if (pts.length > 1){
+      pts.forEach(p => {
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1', x); line.setAttribute('y1', y);
+        line.setAttribute('x2', p.x); line.setAttribute('y2', p.y);
+        line.setAttribute('stroke', '#5a5443');
+        line.setAttribute('stroke-width', '0.5');
+        line.setAttribute('opacity', '0.35');
+        svg.appendChild(line);
+      });
+    }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'poster-wrap';
+    wrap.style.position = 'absolute';
+    wrap.style.left = x + 'px';
+    wrap.style.top = y + 'px';
+    const img = mkImg(film, 22, 32);
+    img.className = 'poster';
+    img.style.left = '0'; img.style.top = '0'; img.style.position='absolute';
+    wrap.appendChild(img);
+    attachLabel(wrap, film);
+    stage.appendChild(wrap);
+  });
+}
+
+/* ---------- Option B: Genre Weave ---------- */
+function buildWeave(){
+  const stage = document.getElementById('stage-b');
+  const W = stage.clientWidth, H = stage.clientHeight;
+  const warpGenres = GENRE_ORDER.slice(0,11);
+  const weftGenres = GENRE_ORDER.slice(11);
+  const marginX = 70, marginY = 50;
+  const warpX = {}, weftY = {};
+  warpGenres.forEach((g,i) => { warpX[g] = marginX + (i/(warpGenres.length-1)) * (W - marginX*2); });
+  weftGenres.forEach((g,i) => { weftY[g] = marginY + (i/(weftGenres.length-1)) * (H - marginY*2); });
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  stage.appendChild(svg);
+  warpGenres.forEach(g => {
+    const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1', warpX[g]); l.setAttribute('y1', 20);
+    l.setAttribute('x2', warpX[g]); l.setAttribute('y2', H-20);
+    l.setAttribute('stroke', '#c9c2ae'); l.setAttribute('stroke-width', '1');
+    svg.appendChild(l);
+    const lbl = document.createElement('div');
+    lbl.className = 'thread-label';
+    lbl.textContent = g;
+    lbl.style.left = (warpX[g]-8) + 'px';
+    lbl.style.top = '6px';
+    lbl.style.writingMode = 'vertical-rl';
+    stage.appendChild(lbl);
+  });
+  weftGenres.forEach(g => {
+    const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+    l.setAttribute('x1', 20); l.setAttribute('y1', weftY[g]);
+    l.setAttribute('x2', W-20); l.setAttribute('y2', weftY[g]);
+    l.setAttribute('stroke', '#c9c2ae'); l.setAttribute('stroke-width', '1');
+    svg.appendChild(l);
+    const lbl = document.createElement('div');
+    lbl.className = 'thread-label';
+    lbl.textContent = g;
+    lbl.style.left = '4px';
+    lbl.style.top = (weftY[g]-6) + 'px';
+    stage.appendChild(lbl);
+  });
+
+  const occupied = {};
+  SAMPLE.forEach(film => {
+    const rnd = seededRandom(film.id + 'w');
+    const wG = film.genres.find(g => warpX[g] !== undefined);
+    const fG = film.genres.find(g => weftY[g] !== undefined);
+    let x, y;
+    if (wG && fG){
+      const key = wG+'|'+fG;
+      const n = occupied[key] = (occupied[key]||0) + 1;
+      const spread = (n-1) * 16;
+      const ang = (n-1) * 2.4;
+      x = warpX[wG] + Math.cos(ang) * spread * 0.5;
+      y = weftY[fG] + Math.sin(ang) * spread * 0.5;
+    } else if (wG){
+      x = warpX[wG] + (rnd()-0.5)*14;
+      y = marginY + rnd() * (H - marginY*2);
+    } else if (fG){
+      x = marginX + rnd() * (W - marginX*2);
+      y = weftY[fG] + (rnd()-0.5)*14;
+    } else {
+      x = marginX + rnd()*(W-marginX*2);
+      y = marginY + rnd()*(H-marginY*2);
+    }
+
+    const thirdGenre = film.genres.find(g => g !== wG && g !== fG && (warpX[g]!==undefined || weftY[g]!==undefined));
+    if (thirdGenre){
+      const tx = warpX[thirdGenre] !== undefined ? warpX[thirdGenre] : x;
+      const ty = weftY[thirdGenre] !== undefined ? weftY[thirdGenre] : y;
+      const stitch = document.createElementNS('http://www.w3.org/2000/svg','line');
+      stitch.setAttribute('x1', x); stitch.setAttribute('y1', y);
+      stitch.setAttribute('x2', tx); stitch.setAttribute('y2', ty);
+      stitch.setAttribute('stroke', '#8a836d');
+      stitch.setAttribute('stroke-width', '0.5');
+      stitch.setAttribute('stroke-dasharray', '2,3');
+      stitch.setAttribute('opacity', '0.5');
+      svg.appendChild(stitch);
+    }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'poster-wrap';
+    wrap.style.position = 'absolute';
+    wrap.style.left = x + 'px';
+    wrap.style.top = y + 'px';
+    const img = mkImg(film, 20, 29);
+    img.className = 'poster';
+    img.style.left='0'; img.style.top='0'; img.style.position='absolute';
+    wrap.appendChild(img);
+    attachLabel(wrap, film);
+    stage.appendChild(wrap);
+  });
+}
+
+/* ---------- Option C: Genre Broadsheet ---------- */
+function buildBroadsheet(){
+  const grid = document.getElementById('broadsheet-grid');
+  const tiers = {
+    Drama: 'large',
+    Comedy: 'medium', Crime: 'medium', Adventure: 'medium', Action: 'medium',
+  };
+  GENRE_ORDER.forEach(g => { if (!tiers[g]) tiers[g] = 'small'; });
+
+  const zoneFilms = {};
+  GENRE_ORDER.forEach(g => zoneFilms[g] = []);
+  const dupSeen = {};
+
+  SAMPLE.forEach(film => {
+    let primary = tiers[film.primary_genre] ? film.primary_genre : film.genres.find(g => tiers[g]);
+    if (!primary) return;
+    zoneFilms[primary].push({film, dup:false});
+    const secondary = film.genres.find(g => g !== primary && tiers[g]);
+    if (secondary && !dupSeen[film.id]){
+      zoneFilms[secondary].push({film, dup:true});
+      dupSeen[film.id] = true;
+    }
+  });
+
+  const colFlow = document.createElement('div');
+  colFlow.className = 'column-flow';
+
+  GENRE_ORDER.forEach(g => {
+    if (!zoneFilms[g].length) return;
+    const zone = document.createElement('div');
+    zone.className = 'zone tier-' + tiers[g];
+    const h3 = document.createElement('h3');
+    h3.textContent = g;
+    zone.appendChild(h3);
+    const thumbs = document.createElement('div');
+    thumbs.className = 'thumbs';
+    const thumbSize = tiers[g] === 'large' ? [34, 49] : [24, 35];
+    zoneFilms[g].forEach(({film, dup}) => {
+      const wrap = document.createElement('span');
+      wrap.className = 'poster-wrap';
+      wrap.style.position = 'relative';
+      wrap.style.display = 'inline-block';
+      const img = mkImg(film, thumbSize[0], thumbSize[1]);
+      if (dup) img.classList.add('dup');
+      wrap.appendChild(img);
+      attachLabel(wrap, film);
+      thumbs.appendChild(wrap);
+    });
+    zone.appendChild(thumbs);
+    if (tiers[g] === 'large') grid.appendChild(zone);
+    else colFlow.appendChild(zone);
+  });
+
+  grid.appendChild(colFlow);
+}
+
+buildConstellation();
+buildWeave();
+buildBroadsheet();
+</script>
+</body>
+</html>
