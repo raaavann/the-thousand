@@ -9,13 +9,13 @@ Built for **DE705 Interactive Data Visualization**.
 
 ## Live
 
+**[→ Open the constellation](https://raaavann.github.io/the-thousand/)**
+
 | | |
 |---|---|
-| **The Thousand** | the constellation, as shipped |
-| **The original** | `before/` — the first build, kept runnable for comparison |
-| **Spatial Claim Check** | `skills/spatial-claim-check/` — the skill write-up, with charts |
-
-*(Links are filled in once GitHub Pages is enabled; see below.)*
+| [The Thousand](https://raaavann.github.io/the-thousand/) | the constellation, as shipped |
+| [The original](https://raaavann.github.io/the-thousand/before/) | the first build, kept runnable for comparison |
+| [Spatial Claim Check](https://raaavann.github.io/the-thousand/skills/spatial-claim-check/) | the skill write-up, with charts |
 
 ---
 
@@ -123,9 +123,3 @@ those slots are left blank rather than guessed.
 Posters are served by IMDb and are not redistributed here. The IMDb mark appears on
 the page as source attribution.
 
----
-
-## Enabling Pages
-
-Settings → Pages → Source: *Deploy from a branch* → `main` / `(root)`. The three URLs
-above go live a minute later.
