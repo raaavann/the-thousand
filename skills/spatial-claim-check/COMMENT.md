@@ -1,6 +1,15 @@
 # Skill: `spatial-claim-check`
 
-**Full write-up with charts:** https://claude.ai/code/artifact/25499090-52ce-4125-8baf-43077f47f337
+| | |
+|---|---|
+| 🌌 **[The constellation](https://raaavann.github.io/the-thousand/)** | the rebuilt piece, live |
+| 🕳️ **[The original](https://raaavann.github.io/the-thousand/before/)** | the before, still runnable |
+| 📐 **[Spatial Claim Check](https://raaavann.github.io/the-thousand/skills/spatial-claim-check/)** | the full audit, with charts |
+| 💾 **[Repo](https://github.com/raaavann/the-thousand)** | everything, including the skill files |
+
+Both builds are live, so none of the numbers below have to be taken on trust. Open
+either one and run `__spatialAudit()` in the console to pull the coordinates and
+re-run the check yourself.
 
 ## What it's for
 
@@ -131,6 +140,7 @@ Never output a score on its own.
   loading), not a defect. Force a real paint and re-check first.
 ```
 
+All of it is in [the repo](https://github.com/raaavann/the-thousand/tree/main/skills/spatial-claim-check).
 Three reference files sit alongside it: `references/measures.md` (Jaccard, nPMI,
 lift, cosine-on-TF-IDF, with formulas and when each is right), `references/methods.md`
 (the per-method table of what is readable and what is an artifact), and
@@ -148,10 +158,10 @@ the centre, the other 20 on a circle, each film at the **unweighted mean** of it
 genres' positions. Its stated claim was a good one, which is what made it auditable:
 *"films with more than one genre sit between the clusters they belong to."*
 
-> **Drag `before.png` here.**
-> *The original. Seven genre labels — Fantasy, Musical, Sport, History, Animation,
-> Family, Film-Noir — sit in open space while the collection piles into one mass. The
-> anchors are decorative.*
+**[→ Open the original](https://raaavann.github.io/the-thousand/before/)** and give the
+posters a few seconds to load. Seven genre labels (Fantasy, Musical, Sport, History,
+Animation, Family, Film-Noir) sit in open space while the collection piles into one
+undifferentiated mass. The anchors are decorative.
 
 **Five of seven checks failed.** The two that hurt:
 
@@ -212,10 +222,16 @@ claim would have been false. I'd never have known without ablating.
 
 ## How it made the viz better
 
-> **Drag `after.png` here.**
-> *The rebuild. Every genre anchor now has films around it, rating is carried in star
-> radius and brightness, and the amber lines show which genres the selected film
-> actually belongs to.*
+**[→ Open the rebuild](https://raaavann.github.io/the-thousand/)**. Three things to
+try, in order:
+
+1. **Hover a genre label.** Its films light and the rest recede. Try *Animation*: it
+   lights an arc between Family, Fantasy and Adventure, which is the structure the
+   original had no way of showing.
+2. **Scroll to zoom, and drag.** The crowded core resolves into separate, clickable
+   stars. Marks grow more slowly than the field does, so separation outpaces size.
+3. **Hover any star.** Amber lines run to each genre it actually belongs to. That is
+   the claim being shown rather than asserted.
 
 | | Original | Shipped |
 |---|---|---|
