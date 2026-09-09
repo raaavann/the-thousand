@@ -159,6 +159,13 @@
     // change; zoom and pan are a lens over them, so nothing about the claim the
     // chart makes depends on where the reader happens to be looking.
     let zoom = 1, panX = 0, panY = 0;
+    // Zoom is eased, so there is a target and a rendered value. Pan is derived
+    // from the anchor rather than eased separately: easing the two independently
+    // lets the point under the cursor drift during the animation, which is the
+    // thing that makes a zoom feel loose.
+    let tZoom = 1;
+    let anchorSX = 0, anchorSY = 0;   // screen point to hold still
+    let anchorWX = 0, anchorWY = 0;   // world point under it
     const MINZ = 1, MAXZ = 7;
     let dragFrom = null, dragged = false;
     let lastPageScroll = 0, pointerSettledAt = 0;
@@ -367,26 +374,38 @@
       panY = ch <= H ? (H - ch) / 2 : Math.min(0, Math.max(H - ch, panY));
     }
 
-    // Zoom about a point, keeping whatever sits under it pinned there. Anything
-    // else makes the field slide out from under the pointer.
+    // Zoom about a point, keeping whatever sits under it pinned there for the
+    // whole of the animation, not just at its end. The world point under the
+    // cursor is captured once against the *rendered* transform; every eased frame
+    // then re-derives pan from it, so the thing you aimed at stays put.
+    //
+    // Successive wheel ticks multiply the target, not the rendered value, so a
+    // fast scroll accumulates properly instead of fighting its own easing.
     function zoomAt(mx, my, factor) {
-      const nz = Math.max(MINZ, Math.min(MAXZ, zoom * factor));
-      if (Math.abs(nz - zoom) < 1e-4) return false;
-      const wx = (mx - panX) / zoom, wy = (my - panY) / zoom;
-      zoom = nz;
-      panX = mx - wx * zoom;
-      panY = my - wy * zoom;
-      clampPan();
+      const nz = Math.max(MINZ, Math.min(MAXZ, tZoom * factor));
+      if (Math.abs(nz - tZoom) < 1e-4) return false;
+      anchorSX = mx; anchorSY = my;
+      anchorWX = (mx - panX) / zoom;
+      anchorWY = (my - panY) / zoom;
+      tZoom = nz;
       setTouchAction();
-      if (onZoom) onZoom(zoom);
+      if (onZoom) onZoom(tZoom);
+      if (reduced.matches) { zoom = tZoom; applyAnchor(); }
       return true;
+    }
+
+    // Pan that keeps the anchor pinned under its screen point at the current zoom.
+    function applyAnchor() {
+      panX = anchorSX - anchorWX * zoom;
+      panY = anchorSY - anchorWY * zoom;
+      clampPan();
     }
 
     // On touch, the browser and this field both want the same gesture. At 1x the
     // page keeps vertical panning, so a finger drag scrolls the page as it should.
     // Once zoomed the field is a map being explored, and takes the gesture.
     function setTouchAction() {
-      canvas.style.touchAction = zoom > 1.001 ? 'none' : 'pan-y';
+      canvas.style.touchAction = tZoom > 1.001 ? 'none' : 'pan-y';
     }
 
     function starAt(mx, my) {
@@ -653,6 +672,21 @@
         moving = true;
       } else { parX = tParX; parY = tParY; }
 
+      // Zoom eases in log space. Linear easing of a multiplicative quantity
+      // crawls at the top of the range and lurches at the bottom; in log space a
+      // constant rate reads as a constant rate at every magnification.
+      if (Math.abs(Math.log(tZoom) - Math.log(zoom)) > 0.0015) {
+        const lz = Math.log(zoom);
+        zoom = Math.exp(lz + (Math.log(tZoom) - lz) * 0.2);
+        applyAnchor();
+        moving = true;
+        if (hover || cursor) showTip(hover || cursor);   // the card follows its star
+      } else if (zoom !== tZoom) {
+        zoom = tZoom;
+        applyAnchor();
+        moving = true;
+      }
+
       for (let i = 0; i < stars.length; i++) {
         const s = stars[i], d = s.ta - s.a;
         if (Math.abs(d) > 0.005) { s.a += d * 0.16; moving = true; }
@@ -766,7 +800,8 @@
       canvas.style.width = W + 'px';
       canvas.style.height = H + 'px';
       if (!halo) buildSprites();
-      zoom = 1; panX = 0; panY = 0;
+      zoom = 1; tZoom = 1; panX = 0; panY = 0;
+      anchorSX = anchorSY = anchorWX = anchorWY = 0;
       setTouchAction();
       if (onZoom) onZoom(zoom);
       layout();
@@ -831,12 +866,9 @@
       e.preventDefault();
       const r = canvas.getBoundingClientRect();
       const mx = e.clientX - r.left, my = e.clientY - r.top;
-      if (zoomAt(mx, my, Math.exp(-dy * 0.0016))) {
+      if (zoomAt(mx, my, Math.exp(-dy * 0.0018))) {
         setParallaxFromPointer(mx, my);
-        hover = starAt(mx, my);
-        canvas.style.cursor = hover ? 'pointer' : (zoom > 1 ? 'grab' : 'default');
-        showTip(hover || cursor);
-        draw();
+        run();
       }
     }, { passive: false });
 
@@ -867,7 +899,7 @@
         const cy = (pts[0].y + pts[1].y) / 2 - r.top;
         const target = pinchZoom * (d / pinchFrom);
         dragged = true;
-        if (zoomAt(cx, cy, target / zoom)) draw();
+        if (zoomAt(cx, cy, target / tZoom)) run();
         return;
       }
 
@@ -875,9 +907,18 @@
         const dx = e.clientX - dragFrom.x, dy = e.clientY - dragFrom.y;
         if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragged = true;
         if (zoom > 1 && dragged) {
+          // A drag has to track the pointer exactly, so it is applied directly
+          // rather than eased, and it stops any zoom still in flight. Panning
+          // that lags behind the finger feels broken in a way zoom does not.
+          tZoom = zoom;
           panX = dragFrom.panX + dx;
           panY = dragFrom.panY + dy;
           clampPan();
+          // Re-seat the anchor on the pointer so a zoom straight after a drag
+          // still pins the right point.
+          anchorSX = e.clientX - r.left; anchorSY = e.clientY - r.top;
+          anchorWX = (anchorSX - panX) / zoom;
+          anchorWY = (anchorSY - panY) / zoom;
           showTip(hover || cursor);
           draw();
         }
@@ -1006,19 +1047,23 @@
       },
 
       zoomBy: function (f) {
-        if (zoomAt(W / 2, H / 2, f)) { showTip(hover || cursor); draw(); }
+        if (zoomAt(W / 2, H / 2, f)) run();
       },
 
       resetView: function () {
-        zoom = 1; panX = 0; panY = 0;
-        clampPan();
+        // Glide home rather than snap, using the centre as the anchor so the
+        // field settles symmetrically.
+        anchorSX = W / 2; anchorSY = H / 2;
+        anchorWX = (anchorSX - panX) / zoom;
+        anchorWY = (anchorSY - panY) / zoom;
+        tZoom = 1;
         setTouchAction();
-        if (onZoom) onZoom(zoom);
-        showTip(hover || cursor);
-        draw();
+        if (onZoom) onZoom(tZoom);
+        if (reduced.matches) { zoom = 1; panX = 0; panY = 0; clampPan(); draw(); }
+        else run();
       },
 
-      getZoom: function () { return zoom; },
+      getZoom: function () { return tZoom; },
 
       cursorFilm: function () { return cursor ? cursor.f : null; },
 
@@ -1027,6 +1072,8 @@
       positions: function () {
         return {
           size: { w: W, h: H },
+          // The lens, so a reader checking coordinates can map world to screen.
+          view: { zoom: zoom, targetZoom: tZoom, panX: panX, panY: panY },
           anchors: Object.keys(anchors).map(g => ({ genre: g, x: anchors[g].x, y: anchors[g].y })),
           stars: stars.map(s => ({ x: s.x, y: s.y, r: s.r, z: s.z, genres: s.f.genres, title: s.f.title }))
         };

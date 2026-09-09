@@ -21,9 +21,10 @@
 
    TYPE is two families, and hierarchy comes from size, weight and tracking
    rather than a third face.
-     Jost                   the wordmark, and nothing else
-     Libre Caslon Display   film titles, section heads, numerals of consequence
-     Archivo                everything else; labels are uppercase + tracked
+     Jost           the wordmark, and nothing else
+     EB Garamond    the genre names printed on the star field, and only those
+     Lora           film titles, section heads, numerals of consequence
+     Archivo        everything else; labels are uppercase + tracked
    ========================================================================== */
 
 :root{
@@ -187,7 +188,7 @@ body{
 .masthead__deck{
   margin:0;
   max-width:54ch;
-  font-family:"Libre Caslon Text",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-size:var(--t-md);
   line-height:1.62;
   color:var(--cream-2);
@@ -214,7 +215,7 @@ body{
 }
 .figures dd{
   margin:0;
-  font-family:"Libre Caslon Display",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-size:clamp(20px,1.7vw,25px);
   line-height:1.1;
   letter-spacing:-.01em;
@@ -292,7 +293,7 @@ body{
   font-size:var(--t-sm); color:var(--cream-3);
 }
 .count b{
-  font-family:"Libre Caslon Display",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-weight:400; font-size:var(--t-lg); color:var(--cream);
   font-variant-numeric:lining-nums tabular-nums;
 }
@@ -387,9 +388,9 @@ body{
   will-change:transform;
   pointer-events:auto;
   background:none; border:0; padding:5px 8px; cursor:pointer;
-  font-family:"Libre Caslon Text",Georgia,serif;
-  font-size:clamp(12.5px,1.02vw,15px);
-  font-style:italic;
+  font-family:"EB Garamond",Garamond,Georgia,serif;
+  font-size:clamp(14px,1.14vw,17px);   /* Garamond runs small; sized up to match */
+  font-weight:400;
   line-height:1;
   color:var(--cream-2);
   white-space:nowrap;
@@ -417,7 +418,7 @@ body{
 .sky__tip-b{ min-width:0; align-self:center; }
 .sky__tip b{
   display:block;
-  font-family:"Libre Caslon Display",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-weight:400; font-size:16px; line-height:1.16;
   color:var(--cream); margin-bottom:6px;
   overflow-wrap:anywhere;
@@ -456,7 +457,7 @@ body{
 }
 .sky__empty p{
   margin:0;
-  font-family:"Libre Caslon Display",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-size:var(--t-xl); color:var(--cream-2);
 }
 .sky__empty button{
@@ -515,7 +516,7 @@ body{
 .sky__note{
   grid-column:9 / span 4;
   margin:0;
-  font-family:"Libre Caslon Text",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-size:var(--t-sm);
   line-height:1.65;
   color:var(--cream-3);
@@ -547,13 +548,13 @@ body{
 }
 .section__title{
   margin:0;
-  font-family:"Libre Caslon Display",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-weight:400; font-size:var(--t-xl); line-height:1;
   letter-spacing:-.012em; white-space:nowrap;
   color:var(--cream);
 }
 .section__note{
-  font-family:"Libre Caslon Text",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-style:italic; font-size:var(--t-sm); color:var(--cream-3);
   min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
@@ -605,7 +606,7 @@ body{
   position:absolute; inset:0; z-index:0;
   display:flex; align-items:flex-end; padding:9px;
   background:linear-gradient(160deg,var(--raise-2),var(--deep));
-  font-family:"Libre Caslon Text",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-size:12px; line-height:1.22; color:var(--cream-2);
 }
 .tile__cap{
@@ -619,7 +620,7 @@ body{
 .tile__cap b{
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;
   overflow:hidden;
-  font-family:"Libre Caslon Display",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-weight:400; font-size:12.5px; line-height:1.2; color:var(--cream);
 }
 .tile__cap span{
@@ -650,7 +651,7 @@ body{
 }
 .empty p{
   margin:0 0 18px;
-  font-family:"Libre Caslon Display",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-size:var(--t-xl); color:var(--cream-2);
 }
 .empty button{
@@ -723,7 +724,7 @@ body{
 
 .plate h2{
   margin:0 0 12px;
-  font-family:"Libre Caslon Display",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-weight:400; font-size:clamp(27px,2.4vw,36px);
   line-height:1.06; letter-spacing:-.015em;
   color:var(--cream); text-wrap:balance;
@@ -745,7 +746,7 @@ body{
   padding:22px 0; border-bottom:1px solid var(--rule);
 }
 .score__big{
-  font-family:"Libre Caslon Display",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-size:56px; line-height:.84; letter-spacing:-.028em;
   color:var(--cream);
   font-variant-numeric:lining-nums tabular-nums;
@@ -762,7 +763,7 @@ body{
 
 .plate__quote{
   margin:24px 0;
-  font-family:"Libre Caslon Text",Georgia,serif;
+  font-family:"Lora",Georgia,serif;
   font-size:var(--t-md); line-height:1.55; font-style:italic;
   color:var(--cream); text-wrap:pretty;
 }
