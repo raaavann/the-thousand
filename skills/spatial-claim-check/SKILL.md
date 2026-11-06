@@ -178,8 +178,14 @@ scale-free and still viewport-dependent, because the *layout* is usually recompu
 per viewport: change the aspect ratio of the frame and the anchors move, so the score
 moves with them. One measured figure drifted 69.3% → 69.2% → 68.5% across three
 builds purely from resizing the container. None of those numbers was wrong; quoting
-any of them to one decimal in the artifact was. Say "around 69%", say what frame it
-was measured in, and note that it shifts with the shape of the container.
+any of them to one decimal in the artifact was. Round, say what frame you measured
+in, and note that it shifts with the shape of the container.
+
+Better still, remove the drift. If the layout is recomputed per viewport, every
+reader gets a different map and the metric has no single value to report. Solving
+once and fitting the result held the same chart to within half a point across
+three screen shapes, at a cost of about five points of absolute accuracy — a
+trade worth making for anything a reader is meant to return to.
 
 **And ablate.** If several things changed at once, changing them together and
 reporting one improvement is not evidence. Vary one at a time and report the table.

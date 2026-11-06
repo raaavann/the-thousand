@@ -401,7 +401,7 @@ pre.snip i{ color:var(--ink-4); font-style:normal; }
   <dl class="spec">
     <div><dt>Checks</dt><dd class="tnum">7<small>plus one falsifiable measurement</small></dd></div>
     <div><dt>Subject</dt><dd class="tnum">1,000<small>films, 21 genres, computed coordinates</small></dd></div>
-    <div><dt>Claim score</dt><dd class="tnum">55<span style="color:var(--ink-4)">→</span>69%<small>films nearest a genre they belong to</small></dd></div>
+    <div><dt>Claim score</dt><dd class="tnum">55<span style="color:var(--ink-4)">→</span>64%<small>films nearest a genre they belong to, stable across screen shapes</small></dd></div>
     <div><dt>Verdicts</dt><dd class="tnum">5<small>of 7 checks failed on first run</small></dd></div>
   </dl>
 </header>
@@ -624,7 +624,7 @@ base  = overall label prevalence</pre>
       <table class="data">
         <thead><tr><th>&nbsp;</th><th>Original</th><th>Shipped</th></tr></thead>
         <tbody>
-          <tr><td>Nearest anchor is own genre</td><td>55.4%</td><td>~69%</td></tr>
+          <tr><td>Nearest anchor is own genre</td><td>55.4%</td><td>64.0%</td></tr>
           <tr class="is-emph"><td>— three-genre films, the premise</td><td>46.9%</td><td>67.2%</td></tr>
           <tr><td>Genres with no films near their label</td><td>4 of 21</td><td>0 of 21</td></tr>
           <tr><td>Deterministic across reloads</td><td>no</td><td>yes</td></tr>
@@ -651,6 +651,16 @@ base  = overall label prevalence</pre>
         configuration measured 69.3%, 69.2% and 68.5% across three container sizes.
         All three are right for the frame they were taken in; printing any of them to
         one decimal as though it were a property of the layout was not.</p>
+      <p><strong>A third pass fixed the cause rather than the wording.</strong> The
+        layout no longer re-solves per viewport: it is solved once and fitted, so
+        the same arrangement survives every screen shape and holds the score to
+        64.5 / 64.1 / 64.3 across landscape, narrow landscape and portrait. That
+        costs about five points of absolute accuracy, which is the trade for a map
+        a reader can return to and find unchanged. An outside critique of that same
+        build then found three things these checks had passed — rating riding on
+        the weakest visual channels, an unstated 13.7× area exaggeration, and a
+        twinkle modulating the very channel that encoded rating. All three are
+        folded back into the skill.</p>
     </div>
 
     <div class="prose" style="margin-top:2.2em">

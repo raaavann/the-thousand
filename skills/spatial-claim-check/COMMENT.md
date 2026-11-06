@@ -235,7 +235,7 @@ try, in order:
 
 | | Original | Shipped |
 |---|---|---|
-| Nearest anchor is own genre | 55.4% | **~69%** |
+| Nearest anchor is own genre | 55.4% | **64.0%** |
 | — three-genre films *(the premise)* | 46.9% | **67.2%** |
 | Genres with no films near their label | 4 of 21 | 0 of 21 |
 | Deterministic across reloads | no (unseeded `Math.random()`) | yes |
@@ -243,12 +243,39 @@ try, in order:
 | Caveat in the artifact | none | one sentence, in frame |
 | Coordinates auditable | no | `window.__spatialAudit()` |
 
-One caveat I'd add, because I got it wrong first: that score is scale-free but the
-*layout* is recomputed per viewport, so the same build measured 69.3%, 69.2% and
-68.5% across three container sizes. Report the frame you measured in, and don't
-print a decimal a resize can move.
+Two caveats, both learned the hard way.
 
-That last row is my favourite thing the skill produced. A computed-position chart that
+That score is scale-free, but the *layout* was being recomputed per viewport, so
+one build measured 69.3%, 69.2% and 68.5% across three container sizes — every
+reader getting a slightly different map. The shipped version solves the layout
+once and fits it to the frame, which holds the score to **64.5 / 64.1 / 64.3**
+across landscape, narrow landscape and portrait. That is about five points of
+accuracy traded for a map a person can return to. I think that is the right buy
+for something meant to be revisited, and both numbers are stated in the artifact.
+
+And report the frame you measured in. Don't print a decimal a resize can move.
+
+That last row is my favourite thing the skill produced.
+
+**A third pass, after an outside critique.** Someone reviewed the shipped version
+and found nine more data-visualisation problems. The useful part was *which* ones
+my own skill had let through:
+
+- Rating sat on area, brightness and blur — all low on the Cleveland–McGill
+  accuracy ranking — on a continuous ramp. With 805 of 1,000 films between 7.6 and
+  8.1, four fifths of the collection was drawn in the bottom third of the
+  brightness range. My check asked whether a mark could be *resolved*. It never
+  asked whether the *scale* could be read. Now five graduated classes, breaks
+  following the real distribution, all of them in the legend with counts.
+- Radius ran 1× to 3.7×, so area grew 13.7× across a range whose real spread is
+  22%. A lie factor near 57. Nothing in the skill covered exaggeration at all; the
+  legend now says "relative within 7.6–9.3, not to scale."
+- My own check 6b said motion carrying no data must stay subtle. It did not say
+  that motion on a channel that *does* carry data is simply forbidden — and my
+  twinkle was modulating brightness, which is rating. Both twinkle and parallax
+  are off the data now: the disc holds steady, only the glow shimmers.
+
+All three are folded back into the skill. A computed-position chart that
 can't hand over its coordinates is asking for trust it hasn't earned — so the piece now
 exposes its own positions and anchors, and anyone can re-run the check on it.
 

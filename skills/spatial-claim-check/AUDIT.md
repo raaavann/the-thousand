@@ -1,7 +1,8 @@
 # Spatial Claim Check — "1,000 Films, 21 Genres"
 
-Audit of the genre constellation in `before/`, run 9 September 2026;
-second pass over the rebuilt artifact, 10 September 2026.
+Audit of the genre constellation in `before/`, run 9 September 2026; second pass
+over the rebuilt artifact, 10 September 2026; third pass against an external
+critique, 6 November 2026.
 Every number below was measured, not estimated; the method for each is given so it
 can be re-run.
 
@@ -94,7 +95,9 @@ recomputed per viewport, so the anchors move when the frame's aspect ratio chang
 and the score moves with them. Across three subsequent builds the same configuration
 measured 69.3%, 69.2% and 68.5%, purely from resizing the container. All three are
 correct for the frame they were taken in; quoting any of them to one decimal in the
-artifact was not. The shipped page now says "around 69%" and names the caveat.
+artifact was not. The eventual fix was structural rather than editorial: stop
+re-solving the layout per viewport, so there is one figure to quote. See the
+third pass above.
 
 **What the ablation says, including the parts that are unflattering:**
 
@@ -137,19 +140,81 @@ Paste this into the artifact, replacing nothing (there was nothing):
 
 ## Result
 
-| | Original | Rebuilt |
-|---|---|---|
-| Nearest anchor is own genre | 55.4% | **~69%** |
-| — three-genre films *(the premise)* | 46.9% | **67.2%** |
-| Anchor labels legible over the field | no | yes, scrimmed |
-| Overlapping label pairs | not measured | 0 at 390px and 1512px |
-| Genres with no films near their label | **4 of 21** | 0 of 21 |
-| Deterministic across reloads | no | yes (seeded) |
-| Rating encoded | not at all | radius + brightness |
-| Caveat in the artifact | none | one sentence, in frame |
-| Coordinates auditable | no | `window.__spatialAudit()` |
+Measured on the live artifact at 1512×950 unless stated.
+
+| | Original | Rebuilt | Shipped |
+|---|---|---|---|
+| Nearest anchor is own genre | 55.4% | ~69% | **64.0%** |
+| — one-genre films | 98.1% | 100% | 87.6% |
+| — two-genre films | 59.4% | 61.8% | 61.0% |
+| — three-genre films *(the premise)* | 46.9% | 67.2% | **61.3%** |
+| Spread of that score across screen shapes | not measured | 69.3 → 68.5 | **64.5 / 64.1 / 64.3** |
+| Genres with no films near their label | **4 of 21** | 0 of 21 | 0 of 21 |
+| Anchor labels legible over the field | no | yes, scrimmed | yes, scrimmed |
+| Overlapping label pairs | not measured | 0 | 0 at 390px and 1512px |
+| Deterministic across reloads | no | yes (seeded) | yes (seeded) |
+| Rating encoded | not at all | radius + brightness | **5 classes, radius + lightness** |
+| Rating classes shown in the legend | — | 3 of a continuous ramp | **all 5, with counts** |
+| Dense centre readable | no (22px posters) | no (additive blowout) | **yes (capped source-over)** |
+| Animation on an encoding channel | n/a | brightness ±7% | **none** |
+| Smallest rendered type | 6.4px | 9px | **12px** |
+| Caveat in the artifact | none | one sentence, in frame | one sentence, in frame |
+| Coordinates auditable | no | `window.__spatialAudit()` | `window.__spatialAudit()` |
+
+**The score went down, and that is the trade.** The rebuild re-solved the layout
+for every viewport, which fit each screen better and meant no two readers saw the
+same map. The shipped version solves once and fits, so the arrangement is stable
+to within half a point across landscape, narrower landscape and portrait — and
+costs about five points of absolute accuracy to get there. Stability was judged
+the better buy for something a reader is meant to return to. Both numbers are in
+the artifact.
 
 ---
+
+## Third pass, against an external critique
+
+An outside review of the shipped artifact raised nine data-visualisation points
+and seven UX ones. Most were fair and are now fixed. Three are worth recording
+because the skill's own checks had passed the build they were made against.
+
+**Check 6 missed that a channel can be technically present and practically
+unreadable.** Rating was carried by area, brightness and blur — all low on the
+Cleveland–McGill accuracy ranking — on a continuous ramp. The distribution made
+it worse: 805 of 1,000 films rate between 7.6 and 8.1, so four fifths of the
+collection sat in the bottom third of the brightness range, the faintest drawn at
+about 7% opacity. The check asked whether the mark could be *resolved*; it did not
+ask whether the *scale* could be read. Now five graduated classes with fixed
+sizes, breaks following the distribution, all five in the legend with counts.
+
+**Nothing in the skill covered exaggeration.** Radius ran 1× to 3.7×, so area grew
+13.7× across a range whose real spread is 22% — a lie factor near 57 by area.
+Stretching within a range is a legitimate choice; the legend not saying so is not.
+It now reads "sizes are relative within 7.6–9.3, not to scale."
+
+**Check 6b was right and still insufficient.** It said motion carrying no data
+must stay below the threshold of attention. It did not say that motion on a
+channel that *does* carry data is simply forbidden. The twinkle modulated
+brightness, which is rating; the parallax moved position, which is genre. Both
+are off the data now — the disc holds steady and only the glow around it
+shimmers, with a separate dust layer carrying the parallax.
+
+Also fixed: additive blending replaced with capped source-over, because 'lighter'
+summed the 724-film Drama core to flat white; blur replaced with aerial
+perspective, so no mark is harder to hit than another; uneven Wall bands aligned
+to the same five classes; the 2020s bar marked as the single year it covers.
+
+On the UX side the timing heuristic for scroll-to-zoom is gone — plain wheel
+belongs to the page, Ctrl/Cmd+wheel zooms — the star a click would take is ringed
+before the click, several films inside one pick radius are listed rather than
+silently resolved, and the "how to read it" note moved from below the chart to
+three steps on first visit.
+
+**The rAF trap caught this author a third time.** Verifying the cursor lens on the
+live site returned a −0.0% lift and I nearly reported the feature broken. The pane
+was not painting, so `requestAnimationFrame` never advanced and the canvas held
+the frame from before the hover. Re-measured with forced paints: 2.5%. This is
+already in the Never list and in `references/interaction.md`, and it still cost a
+false finding.
 
 ## Second pass, on the rebuilt artifact
 
