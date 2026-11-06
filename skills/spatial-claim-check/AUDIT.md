@@ -154,9 +154,9 @@ Measured on the live artifact at 1512×950 unless stated.
 | Overlapping label pairs | not measured | 0 | 0 at 390px and 1512px |
 | Deterministic across reloads | no | yes (seeded) | yes (seeded) |
 | Rating encoded | not at all | radius + brightness | **5 classes, radius + lightness** |
-| Rating classes shown in the legend | — | 3 of a continuous ramp | **all 5, with counts** |
+| Rating scale declared in the legend | — | 3 points of a continuous ramp | **both ends, ramp between, five steps stated** |
 | Dense centre readable | no (22px posters) | no (additive blowout) | **yes (capped source-over)** |
-| Animation on an encoding channel | n/a | brightness ±7% | **none** |
+| Animation on an encoding channel | n/a | brightness ±7% | **rays only; disc 0.1–2.2%** |
 | Smallest rendered type | 6.4px | 9px | **12px** |
 | Caveat in the artifact | none | one sentence, in frame | one sentence, in frame |
 | Coordinates auditable | no | `window.__spatialAudit()` | `window.__spatialAudit()` |
@@ -184,7 +184,11 @@ it worse: 805 of 1,000 films rate between 7.6 and 8.1, so four fifths of the
 collection sat in the bottom third of the brightness range, the faintest drawn at
 about 7% opacity. The check asked whether the mark could be *resolved*; it did not
 ask whether the *scale* could be read. Now five graduated classes with fixed
-sizes, breaks following the distribution, all five in the legend with counts.
+sizes, breaks following the distribution. The legend went through all five with
+counts and then back to two: the convention is right for a key somebody studies,
+and wrong for one under a chart people glance at. It now shows the two ends with
+a ramp between them and says in words that there are five steps, which declares
+the same scale at a quarter of the reading cost.
 
 **Nothing in the skill covered exaggeration.** Radius ran 1× to 3.7×, so area grew
 13.7× across a range whose real spread is 22% — a lie factor near 57 by area.
@@ -215,6 +219,68 @@ was not painting, so `requestAnimationFrame` never advanced and the canvas held
 the frame from before the hover. Re-measured with forced paints: 2.5%. This is
 already in the Never list and in `references/interaction.md`, and it still cost a
 false finding.
+
+### A fourth pass, on handling
+
+Three faults that only a hand finds, all of them in the gap between a chart
+being correct and being usable.
+
+**A control that moves between two presses of itself.** Reset appeared to the
+right of the zoom buttons, in a group anchored to the right edge, so the first
+press of + shifted + leftwards by the width of a word. Reset now sits at the
+left end of the group: it still appears and disappears, and the button under
+the hand never moves.
+
+**Zoom that stops before the problem does.** The ceiling was 7x, chosen when
+marks scaled at zoom^0.72 and anything beyond it was a wall of fat discs. With a
+knee in the curve — marks grow normally to 6x, then almost stop — the extra
+range costs nothing in legibility, so the ceiling is 16x. Glow and spikes hit
+their own ceiling at 3x, because a lens flare is not a measurement and has no
+business widening when you lean in.
+
+**Labels clamped into a frame they no longer belong in.** The relaxation keeps
+every one of the twenty-one names inside the box. At 1x that is right. At 7x
+most anchors are off-screen and clamping stacked four names in one corner, which
+is how THRILLER came to be printed through HORROR. A name whose anchor has left
+the frame now leaves with it.
+
+**And the field did not look like a sky.** Said plainly, and correctly. The
+marks were soft round balls: a flat disc under a halo 6.4 times its radius,
+gently graded, which is the recipe for bokeh rather than for a star. Three
+things fix it, in this order of importance:
+
+1. **The halo comes down and gets steeper** — 3.6x the mark radius, most of its
+   energy inside the first fifth. A star is a hard point with a tight glow, not
+   a sphere of light.
+2. **Spikes on all five classes, measured in field units and not in disc
+   radii.** This was the real error. Spike length was proportional to the mark,
+   and the faintest 431 marks are 2.7px across, so their cross came out
+   sub-pixel and averaged to literally nothing in the blit — probed at zero
+   light beyond 3px from centre. Four fifths of the field had no star character
+   at all, which is why no amount of work on the other fifth helped. Length now
+   starts from a floor and the class extends it.
+3. **A hot core**, its strength following the same class ramp, so it reinforces
+   the rating encoding instead of washing it out.
+
+Probed afterwards, axis light against diagonal light at the same radius: 37x at
+4px for the faintest class, 33x at 7px for the second, 2.4x at 7px for the
+brightest — lower only because its own halo is bright on the diagonals too.
+Every one of the thousand now carries a cross.
+
+**A leak the earlier passes never looked for.** Opacity is half of how rating is
+encoded here, so a disc is drawn at between 58% and 96% — and whatever is behind
+it shows through at the difference. Behind it is the halo, and the halo is the
+thing that twinkles. The disc of a faint star, whose brightness is supposed to
+*be* its rating, was measured varying by 6.1% over a cycle. Not visible; still
+a value moving on its own. Both the halo and the spike sprite now have their
+centres cleared, at a radius that stays inside the disc at every zoom level, so
+nothing animated is drawn where the datum sits. After: **0.1% on the brightest,
+2.2% on the faintest**, against a 20% step between adjacent classes.
+
+Measured after all of it: the + button sits at the same x at 1x and at 16x;
+21 of 21 labels at 1x, 1 of 21 at 7.6x; rays swing 82% on a faint star and 10%
+on a bright one while their discs hold; the cursor lens lifts its neighbourhood
+22%; 55.7fps with a 18.3ms median frame; the claim metric is unmoved at 64.1%.
 
 ## Second pass, on the rebuilt artifact
 

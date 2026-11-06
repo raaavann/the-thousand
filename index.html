@@ -482,7 +482,17 @@ body{
   display:flex; flex-direction:column; align-items:center; gap:5px;
   min-width:46px;
 }
+/* A fixed box round the swatch, so a 5px dot and a 15px dot still put their
+   labels on the same baseline. */
+.sky__key-mark{ height:16px; display:grid; place-items:center; }
 .sky__key-dot{ border-radius:50%; display:block; }
+.sky__key-ramp{
+  align-self:flex-start; margin-top:8px;
+  width:clamp(40px, 7vw, 104px); height:1px;
+  background:linear-gradient(90deg,
+    rgba(166,146,110,.55) 0%, rgba(199,180,137,.72) 38%,
+    rgba(226,210,168,.88) 66%, rgba(255,250,232,1) 100%);
+}
 .sky__key-item b{
   font-size:12px; font-weight:500; letter-spacing:.02em;
   color:var(--ink-2); font-variant-numeric:tabular-nums;
@@ -958,7 +968,7 @@ body{
 .sky__zoom button:hover:not(:disabled){ border-color:var(--gold); color:var(--gold); }
 .sky__zoom button:disabled{ opacity:.3; cursor:default; }
 .sky__zoom button[data-zoom="reset"]{
-  width:auto; padding:0 11px;
+  width:auto; padding:0 11px; margin-right:2px;
   font-size:var(--t-xs); letter-spacing:.12em; text-transform:uppercase;
 }
 .sky__zoom-read{
@@ -968,7 +978,8 @@ body{
 }
 
 @media (max-width:680px){
-  .sky__zoom{ right:12px; bottom:12px; gap:6px; }
+  .sky__zoom{ right:12px; bottom:12px; gap:5px; }
+  .sky__key-ramp{ width:34px; }
   .sky__zoom-read{ display:none; }
 }
 
@@ -994,7 +1005,7 @@ body{
   font-size:12px; color:var(--ink-3); font-variant-numeric:tabular-nums;
 }
 .sky__key-note{
-  font-size:12px; color:var(--ink-3); max-width:14ch; line-height:1.35;
+  font-size:12px; color:var(--ink-3); max-width:23ch; line-height:1.35;
 }
 
 /* ── First-run coaching, and the gesture hint ─────────────────────────────── */
@@ -1183,18 +1194,18 @@ body{
     <div class="sky__tip" id="sky-tip" hidden></div>
 
     <div class="sky__zoom" id="sky-zoom">
+      <button type="button" data-zoom="reset" id="zoom-reset" hidden>Reset</button>
       <button type="button" data-zoom="out" aria-label="Zoom out">&minus;</button>
       <span class="sky__zoom-read num" id="zoom-read">1.0&times;</span>
       <button type="button" data-zoom="in" aria-label="Zoom in">+</button>
-      <button type="button" data-zoom="reset" id="zoom-reset" hidden>Reset</button>
     </div>
 
     <div class="sky__steps" id="sky-steps" hidden>
       <h3>How to read this</h3>
       <ol>
         <li><i>01</i><span>Each star is one of the <b>1,000 films</b>.</span></li>
-        <li><i>02</i><span><b>Bigger and brighter</b> means rated higher. Five sizes, shown in the key.</span></li>
-        <li><i>03</i><span><b>Where it sits</b> is its genre mix, so films between clusters belong to several.</span></li>
+        <li><i>02</i><span><b>Bigger and brighter</b> means rated higher, in five steps from 7.6 to 9.3.</span></li>
+        <li><i>03</i><span><b>Where it sits</b> is its genre mix. Zoom in to 16&times; to pull a crowded cluster apart.</span></li>
       </ol>
       <button type="button" id="sky-steps-go">Explore</button>
     </div>
@@ -1216,7 +1227,7 @@ body{
     <div class="sky__key">
       <span class="sky__key-title">IMDb rating</span>
       <span class="sky__key-row" id="sky-key-row"></span>
-      <span class="sky__key-note">Sizes are relative within 7.6&ndash;9.3, not to scale</span>
+      <span class="sky__key-note">Five steps between. Sizes relative within the range, not to scale</span>
     </div>
   </div>
 
@@ -1356,11 +1367,11 @@ body{
 
      lo is inclusive, hi exclusive, except for the last class. */
   const CLASSES = [
-    { lo: 7.6, hi: 7.9, label: '7.6–7.8', n: 431, r: 1.00, ink: [166, 146, 110], a: 0.58, glow: 0.16 },
-    { lo: 7.9, hi: 8.2, label: '7.9–8.1', n: 374, r: 1.34, ink: [199, 180, 137], a: 0.70, glow: 0.23 },
-    { lo: 8.2, hi: 8.5, label: '8.2–8.4', n: 142, r: 1.76, ink: [226, 210, 168], a: 0.82, glow: 0.31 },
-    { lo: 8.5, hi: 8.8, label: '8.5–8.7', n:  40, r: 2.26, ink: [243, 233, 203], a: 0.93, glow: 0.40 },
-    { lo: 8.8, hi: 9.4, label: '8.8–9.3', n:  13, r: 2.86, ink: [255, 250, 232], a: 1.00, glow: 0.50 }
+    { lo: 7.6, hi: 7.9, label: '7.6–7.8', n: 431, r: 1.00, ink: [166, 146, 110], a: 0.58, glow: 0.16, spk: 0.30 },
+    { lo: 7.9, hi: 8.2, label: '7.9–8.1', n: 374, r: 1.34, ink: [199, 180, 137], a: 0.70, glow: 0.23, spk: 0.45 },
+    { lo: 8.2, hi: 8.5, label: '8.2–8.4', n: 142, r: 1.76, ink: [226, 210, 168], a: 0.82, glow: 0.31, spk: 0.65 },
+    { lo: 8.5, hi: 8.8, label: '8.5–8.7', n:  40, r: 2.26, ink: [243, 233, 203], a: 0.93, glow: 0.40, spk: 0.85 },
+    { lo: 8.8, hi: 9.4, label: '8.8–9.3', n:  13, r: 2.86, ink: [255, 250, 232], a: 1.00, glow: 0.50, spk: 1.00 }
   ];
   function classOf(rating) {
     for (let i = CLASSES.length - 1; i >= 0; i--) if (rating >= CLASSES[i].lo) return i;
@@ -1494,12 +1505,12 @@ body{
     let tZoom = 1;
     let anchorSX = 0, anchorSY = 0;   // screen point to hold still
     let anchorWX = 0, anchorWY = 0;   // world point under it
-    const MINZ = 1, MAXZ = 7;
+    const MINZ = 1, MAXZ = 16;
     let dragFrom = null, dragged = false;
     let lastPageScroll = 0, pointerSettledAt = 0;
     const pointers = new Map();
     let pinchFrom = 0, pinchZoom = 1;
-    let halo = null, core = null;
+    let halo = null, haloIn = null, core = null, spike = null, markBase = 1;
     let lastVisible = null;
 
     // Background dust: 220 specks that are not films and encode nothing. This is
@@ -1511,13 +1522,14 @@ body{
     function buildDust() {
       const rnd = mulberry32(90210);
       dust = [];
-      for (let i = 0; i < 430; i++) {
+      for (let i = 0; i < 640; i++) {
         const depth = rnd();                       // 0 far … 1 near
         const warm = rnd();
         dust.push({
           x: rnd() * W, y: rnd() * H,
           r: 0.3 + depth * 0.95,
-          a: 0.05 + depth * 0.17,
+          a: 0.05 + depth * 0.17 + (rnd() < 0.07 ? 0.14 : 0),   // a few bright ones
+
           par: 0.25 + depth * 1.45,                // near dust moves most
           ph: rnd() * Math.PI * 2,
           sp: 0.4 + rnd() * 1.0,
@@ -1542,18 +1554,88 @@ body{
       // a thousand createRadialGradient calls is the difference between a 3ms
       // repaint and a 200ms one. The halo is wide and soft, the core tight —
       // mixing them by depth is what produces the focus falloff.
+      // Steep. Most of the energy inside the first fifth of the radius, a
+      // long thin tail after it — an Airy disc, near enough, rather than the
+      // even wash that made every film look like a defocused highlight.
       halo = sprite(128, [
-        [0,    'rgba(255,236,190,0.82)'],
-        [0.13, 'rgba(255,222,160,0.38)'],
-        [0.34, 'rgba(248,204,132,0.12)'],
-        [1,    'rgba(242,196,124,0)']
+        [0,    'rgba(255,241,206,0.95)'],
+        [0.07, 'rgba(255,230,176,0.54)'],
+        [0.17, 'rgba(253,215,146,0.19)'],
+        [0.40, 'rgba(249,204,130,0.055)'],
+        [1,    'rgba(245,198,126,0)']
       ]);
+      // The same sprite with the middle taken out, for the thousand marks.
+      haloIn = (function () {
+        const c = document.createElement('canvas');
+        const px = halo.width, m = px / 2;
+        c.width = c.height = px;
+        const g = c.getContext('2d');
+        g.drawImage(halo, 0, 0);
+        g.globalCompositeOperation = 'destination-out';
+        const hole = g.createRadialGradient(m, m, 0, m, m, px * 0.102);
+        hole.addColorStop(0,    'rgba(0,0,0,1)');
+        hole.addColorStop(0.74, 'rgba(0,0,0,0.96)');
+        hole.addColorStop(1,    'rgba(0,0,0,0)');
+        g.fillStyle = hole;
+        g.fillRect(0, 0, px, px);
+        return c;
+      })();
+
       core = sprite(64, [
         [0,    'rgba(255,252,246,1)'],
         [0.40, 'rgba(255,248,236,0.94)'],
         [0.70, 'rgba(255,240,218,0.26)'],
         [1,    'rgba(255,238,214,0)']
       ]);
+
+      // A third sprite: four tapered spikes on the cardinal axes. This is the
+      // feature that makes a filled circle read as a star rather than a dot,
+      // and the reason the old field looked like a sky and the corrected one
+      // looked like a scatter plot. It is drawn from the glow figure, outside
+      // the disc, so the measured mark is untouched.
+      // Three of them, differing only in how thick the needle is relative to
+      // its length. A sprite is chosen by the size it will be drawn at: a
+      // 2%-thick spike is a clean needle blitted at 60px and literally
+      // sub-pixel blitted at 11px, where it averages away to nothing. The
+      // small star needs a proportionally fatter spike to survive the
+      // downscale and still looks like a fine cross on screen.
+      const makeSpike = (ratio) => {
+        const px = 128, c = document.createElement('canvas');
+        c.width = c.height = px;
+        const g = c.getContext('2d');
+        const m = px / 2, L = m * 0.99, wd = px * ratio;
+        for (let k = 0; k < 4; k++) {
+          g.save();
+          g.translate(m, m);
+          g.rotate(k * Math.PI / 2);
+          const grad = g.createLinearGradient(0, 0, L, 0);
+          grad.addColorStop(0,    'rgba(255,250,232,1)');
+          grad.addColorStop(0.10, 'rgba(255,243,210,0.55)');
+          grad.addColorStop(0.30, 'rgba(255,232,180,0.17)');
+          grad.addColorStop(0.62, 'rgba(252,222,160,0.05)');
+          grad.addColorStop(1,    'rgba(250,216,152,0)');
+          g.fillStyle = grad;
+          g.beginPath();
+          g.moveTo(0, -wd); g.lineTo(L, 0); g.lineTo(0, wd);
+          g.closePath(); g.fill();
+          g.restore();
+        }
+        // Punch the middle out. The rays are the only part wanted: left solid,
+        // the sprite's hot centre lands on top of the disc, and because the
+        // disc is translucent — opacity is half of how rating is encoded — the
+        // twinkle leaks through it. Measured at 6.5% variation on a mark whose
+        // whole job is to hold a value still. With the centre cleared, the
+        // cross starts where the disc ends.
+        g.globalCompositeOperation = 'destination-out';
+        const hole = g.createRadialGradient(m, m, 0, m, m, px * 0.105);
+        hole.addColorStop(0,    'rgba(0,0,0,1)');
+        hole.addColorStop(0.62, 'rgba(0,0,0,0.92)');
+        hole.addColorStop(1,    'rgba(0,0,0,0)');
+        g.fillStyle = hole;
+        g.fillRect(0, 0, px, px);
+        return c;
+      };
+      spike = [makeSpike(0.085), makeSpike(0.042), makeSpike(0.022)];
     }
 
     /* --- layout ------------------------------------------------------------ */
@@ -1598,6 +1680,7 @@ body{
 
       const unit = Math.min(W, H);
       const rBase = Math.max(1, unit * 0.0026);
+      markBase = rBase;                 // the unit the spikes are measured in
       const spread = Math.max(9, unit * 0.024);
 
       const gw = {};
@@ -1648,11 +1731,13 @@ body{
             z: ci / (CLASSES.length - 1),       // 0 far … 1 near, by class
             r: rBase * C.r,
             ink: C.ink,
+            css: 'rgb(' + C.ink[0] + ',' + C.ink[1] + ',' + C.ink[2] + ')',
             // A floor, not a ramp to zero. The faintest class is 431 films —
             // the largest single group in the collection — so it has to stay
             // clearly visible against the sky rather than fading to a smudge.
             base: C.a,
             glow: C.glow,
+            spk: C.spk,                         // diffraction spikes, by class
             par: 0.10 + (ci / 4) * 0.22,        // near classes drift most
             ph: rnd() * Math.PI * 2,            // twinkle phase, glow only
             sp: 0.5 + rnd() * 0.8,
@@ -1735,8 +1820,12 @@ body{
     // Stars grow more slowly than the field does. Separation therefore outpaces
     // size as you zoom, which is the whole point: a star that was unclickable
     // beneath a label at 1x has clear space around it at 3x.
-    const rz = () => Math.pow(zoom, 0.72);
-    const rzGlow = () => Math.pow(zoom, 0.40);
+    const KNEE = 6;
+    const rz = () => (zoom <= KNEE
+      ? Math.pow(zoom, 0.64)
+      : Math.pow(KNEE, 0.64) * Math.pow(zoom / KNEE, 0.14));
+    // Glow and spikes: same curve, much earlier ceiling.
+    const gz = () => Math.pow(Math.min(zoom, 3), 0.55);
 
     function clampPan() {
       const cw = W * zoom, ch = H * zoom;
@@ -1872,10 +1961,18 @@ body{
     function relaxLabels(iters) {
       if (!labelState.length || !anchors) return;
       const PAD = 5, M = 6, BOTTOM = 48;   // reserved for the key and zoom controls
+      const MARG = 80;
+      for (let i = 0; i < labelState.length; i++) {
+        const b = labelState[i], a = anchors[b.genre];
+        const ax = SX(a.x), ay = SY(a.y);
+        b.off = zoom > 1.15 &&
+          (ax < -MARG || ax > W + MARG || ay < -MARG || ay > H + MARG);
+      }
       for (let it = 0; it < iters; it++) {
         for (let i = 0; i < labelState.length; i++) {
           for (let j = i + 1; j < labelState.length; j++) {
             const A = labelState[i], B = labelState[j];
+            if (A.off || B.off) continue;
             const ox = (A.w + B.w) / 2 + PAD - Math.abs(A.x - B.x);
             const oy = (A.h + B.h) / 2 + PAD - Math.abs(A.y - B.y);
             if (ox <= 0 || oy <= 0) continue;
@@ -1892,6 +1989,7 @@ body{
         }
         for (let i = 0; i < labelState.length; i++) {
           const b = labelState[i], a = anchors[b.genre];
+          if (b.off) continue;
           const tx = SX(a.x), ty = SY(a.y) - 13;
           b.x += (tx - b.x) * 0.14;
           b.y += (ty - b.y) * 0.14;
@@ -1900,16 +1998,23 @@ body{
         }
       }
 
-      labelBoxes = labelState.map(b => {
+      labelBoxes = [];
+      labelState.forEach(b => {
+        const want = b.off ? '0' : '';
+        if (b.el.style.opacity !== want) {
+          b.el.style.opacity = want;
+          b.el.style.pointerEvents = b.off ? 'none' : '';
+        }
+        if (b.off) return;
         const a = anchors[b.genre];
         const ax = SX(a.x), ay = SY(a.y);
         b.el.style.transform =
           'translate(' + (b.x - b.w / 2).toFixed(1) + 'px,' + (b.y - b.h / 2).toFixed(1) + 'px)';
-        return {
+        labelBoxes.push({
           genre: b.genre, x: b.x, y: b.y, w: b.w, h: b.h,
           ax: ax, ay: ay,
           lead: Math.hypot(b.x - ax, b.y - ay) > 26
-        };
+        });
       });
     }
 
@@ -1948,9 +2053,8 @@ body{
           const x = d.x + parX * d.par, y = d.y + parY * d.par;
           ctx.globalAlpha = Math.max(0, Math.min(0.34, d.a * tw));
           ctx.fillStyle = d.c;
-          ctx.beginPath();
-          ctx.arc(x, y, d.r, 0, Math.PI * 2);
-          ctx.fill();
+          // Sub-pixel: a square and a circle are the same four pixels here.
+          ctx.fillRect(x - d.r, y - d.r, d.r * 2, d.r * 2);
         }
         ctx.globalAlpha = 1;
       }
@@ -1976,7 +2080,7 @@ body{
 
       // 3 — the field, far classes first so near ones sit on top.
       ctx.globalCompositeOperation = 'source-over';
-      const k = rz();
+      const k = rz(), kg = gz();
       // Normal blending with a capped opacity, NOT additive. Where 724 Drama
       // films overlap, 'lighter' sums to flat white and the densest, most
       // interesting part of the collection becomes the one part you cannot read.
@@ -1992,7 +2096,7 @@ body{
         const x = px_(s), y = py_(s);
         if (x < -60 || x > W + 60 || y < -60 || y > H + 60) continue;
         const rr = Math.max(0.8, s.r * k);
-        const ink = s.ink;
+        const rg = Math.max(0.8, s.r * kg);     // the glow figure, capped early
 
         // The glow shimmers. Independent phase per star, so the field never
         // pulses in unison — and it is only ever the halo, so the measured
@@ -2004,27 +2108,69 @@ body{
           if (dd < LENS_R) { const u = 1 - dd / LENS_R; lens = u * u; }
         }
 
-        if (s.glow > 0 || lens > 0) {
-          const tw = ambient
-            ? 1 + 0.46 * (Math.sin(clock * s.sp + s.ph) * 0.62 +
-                          Math.sin(clock * s.sp * 1.71 + s.ph * 2.3) * 0.38)
-            : 1;
+        // Two beat frequencies per star, independently phased, so the field
+        // never pulses in unison. Range roughly -1 … 1.
+        const osc = ambient
+          ? Math.sin(clock * s.sp + s.ph) * 0.62 +
+            Math.sin(clock * s.sp * 1.71 + s.ph * 2.3) * 0.38
+          : 0;
+        // Proportional swing for the bright, absolute swing for the faint.
+        const tw = Math.max(0, s.glow * (1 + 0.40 * osc) + 0.055 * osc);
+
+        if (tw > 0 || lens > 0) {
           // The lens ADDS rather than multiplies, so the faintest class — 431
           // films that barely glow at rest — lights up as strongly as the
           // brightest. Nearness to the cursor is not a value, so it must not
           // inherit the value ramp.
-          const g = s.glow + lens * 0.58;
-          const R = rr * (6.4 + lens * 2.6);
-          ctx.globalAlpha = Math.max(0, Math.min(0.80, s.a * g * tw));
-          ctx.drawImage(halo, x - R, y - R, R * 2, R * 2);
+          const g = tw + lens * 0.58;
+          // The lens grows the halo only a little, because the cleared
+          // centre scales with the blit: push the radius much past the disc
+          // and the hole peeks out as a hairline ring around the star under
+          // the cursor. The lift lives in the alpha, which has no such limit.
+          const R = rg * (3.6 + lens * 1.15);
+          ctx.globalAlpha = Math.min(0.80, s.a * g * 1.25);
+          ctx.drawImage(haloIn, x - R, y - R, R * 2, R * 2);
+
+          // Spikes, on every class, measured against the field's own unit and
+          // not against the disc — a 2.7px disc cannot carry a visible cross,
+          // and that is what made the faint majority featureless. The class
+          // still sets how far the rays reach, so the cross is one more
+          // channel saying what size and lightness already say.
+          const SR = markBase * kg * (4.8 + 15 * s.spk) * (1 + 0.18 * osc) + lens * 4;
+          // The cap used to bite before the oscillator did: the brightest
+          // thirteen sat pinned at it for the whole cycle, so their crosses
+          // were the one part of the field that did not twinkle. Measured at
+          // 5.1% swing against 30% for the halo behind them. Headroom now.
+          ctx.globalAlpha = Math.min(0.95,
+            s.a * (0.48 + 0.44 * s.spk) * (0.45 + 0.80 * tw + lens * 0.40));
+          const sp = SR < 11 ? spike[0] : (SR < 24 ? spike[1] : spike[2]);
+          ctx.drawImage(sp, x - SR, y - SR, SR * 2, SR * 2);
         }
 
         // The disc is the datum. Fixed opacity, always.
         ctx.globalAlpha = Math.min(0.96, s.a);
-        ctx.fillStyle = 'rgb(' + ink[0] + ',' + ink[1] + ',' + ink[2] + ')';
+        ctx.fillStyle = s.css;
         ctx.beginPath();
         ctx.arc(x, y, rr, 0, Math.PI * 2);
         ctx.fill();
+
+        // The hot core. A real star is not a flat disc of one colour; it has a
+        // small white centre that the eye reads as temperature. Its strength
+        // climbs with the class, so it reinforces the rating ramp rather than
+        // washing it out — the faintest 431 barely get one, which is correct,
+        // because a faint star is just a point.
+        if (s.z > 0.02) {
+          const cr = Math.max(0.45, rr * 0.42);
+          ctx.globalAlpha = Math.min(0.95, s.a * (0.10 + 0.90 * s.z));
+          ctx.fillStyle = '#FFF8E8';
+          if (cr < 1.2) {
+            ctx.fillRect(x - cr, y - cr, cr * 2, cr * 2);
+          } else {
+            ctx.beginPath();
+            ctx.arc(x, y, cr, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
       }
       ctx.globalAlpha = 1;
 
@@ -2227,16 +2373,23 @@ body{
       if (!keyEl) return;
       const unit = Math.min(W, H);
       const rBase = Math.max(1, unit * 0.0026);
-      keyEl.innerHTML = CLASSES.map(C => {
-        const d = Math.max(4, Math.round(rBase * C.r * 2));
+      const end = (C, value, caption) => {
+        // The swatch is the size the chart actually draws, not a prettier one.
+        const d = Math.max(5, Math.round(rBase * C.r * 2));
         const ink = 'rgb(' + C.ink.join(',') + ')';
         return '<span class="sky__key-item">' +
-          '<i class="sky__key-dot" style="width:' + d + 'px;height:' + d + 'px;' +
-            'background:' + ink + ';opacity:' + C.a.toFixed(2) + '"></i>' +
-          '<b>' + C.label + '</b>' +
-          '<span class="sky__key-n">' + C.n + '</span>' +
+          '<span class="sky__key-mark">' +
+            '<i class="sky__key-dot" style="width:' + d + 'px;height:' + d + 'px;' +
+              'background:' + ink + ';opacity:' + C.a.toFixed(2) + '"></i>' +
+          '</span>' +
+          '<b>' + value + '</b>' +
+          '<span class="sky__key-n">' + caption + '</span>' +
         '</span>';
-      }).join('');
+      };
+      keyEl.innerHTML =
+        end(CLASSES[0], '7.6', 'dimmer') +
+        '<span class="sky__key-ramp" aria-hidden="true"></span>' +
+        end(CLASSES[CLASSES.length - 1], '9.3', 'brighter');
     }
 
     /* --- sizing -------------------------------------------------------------- */
@@ -2420,9 +2573,9 @@ body{
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
         e.preventDefault(); api.step(e.key === 'ArrowRight' ? 1 : -1);
       } else if (e.key === '+' || e.key === '=') {
-        e.preventDefault(); api.zoomBy(1.35);
+        e.preventDefault(); api.zoomBy(1.5);
       } else if (e.key === '-' || e.key === '_') {
-        e.preventDefault(); api.zoomBy(1 / 1.35);
+        e.preventDefault(); api.zoomBy(1 / 1.5);
       } else if (e.key === '0') {
         e.preventDefault(); api.resetView();
       } else if ((e.key === 'Enter' || e.key === ' ') && cursor) {
@@ -2891,7 +3044,7 @@ body{
         onZoom: z => {
           $('zoom-read').textContent = z.toFixed(1) + '\u00d7';
           $('zoom-reset').hidden = z <= 1.001;
-          $('sky-zoom').querySelector('[data-zoom="in"]').disabled = z >= 6.99;
+          $('sky-zoom').querySelector('[data-zoom="in"]').disabled = z >= 15.9;
           $('sky-zoom').querySelector('[data-zoom="out"]').disabled = z <= 1.001;
         },
         onCursor: f => {
@@ -3098,8 +3251,10 @@ body{
   // already know it is there, and unusable on a trackpad-less machine.
   $('sky-zoom').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || !sky) return;
-    if (b.dataset.zoom === 'in') sky.zoomBy(1.4);
-    else if (b.dataset.zoom === 'out') sky.zoomBy(1 / 1.4);
+    // 1.5x a step: about seven presses from 1x to 16x, which is a reasonable
+    // number of presses to cross the whole range without the easing lurching.
+    if (b.dataset.zoom === 'in') sky.zoomBy(1.5);
+    else if (b.dataset.zoom === 'out') sky.zoomBy(1 / 1.5);
     else sky.resetView();
   });
 

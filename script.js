@@ -342,7 +342,7 @@
         onZoom: z => {
           $('zoom-read').textContent = z.toFixed(1) + '\u00d7';
           $('zoom-reset').hidden = z <= 1.001;
-          $('sky-zoom').querySelector('[data-zoom="in"]').disabled = z >= 6.99;
+          $('sky-zoom').querySelector('[data-zoom="in"]').disabled = z >= 15.9;
           $('sky-zoom').querySelector('[data-zoom="out"]').disabled = z <= 1.001;
         },
         onCursor: f => {
@@ -549,8 +549,10 @@
   // already know it is there, and unusable on a trackpad-less machine.
   $('sky-zoom').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || !sky) return;
-    if (b.dataset.zoom === 'in') sky.zoomBy(1.4);
-    else if (b.dataset.zoom === 'out') sky.zoomBy(1 / 1.4);
+    // 1.5x a step: about seven presses from 1x to 16x, which is a reasonable
+    // number of presses to cross the whole range without the easing lurching.
+    if (b.dataset.zoom === 'in') sky.zoomBy(1.5);
+    else if (b.dataset.zoom === 'out') sky.zoomBy(1 / 1.5);
     else sky.resetView();
   });
 

@@ -98,18 +98,18 @@ __STYLES__
     <div class="sky__tip" id="sky-tip" hidden></div>
 
     <div class="sky__zoom" id="sky-zoom">
+      <button type="button" data-zoom="reset" id="zoom-reset" hidden>Reset</button>
       <button type="button" data-zoom="out" aria-label="Zoom out">&minus;</button>
       <span class="sky__zoom-read num" id="zoom-read">1.0&times;</span>
       <button type="button" data-zoom="in" aria-label="Zoom in">+</button>
-      <button type="button" data-zoom="reset" id="zoom-reset" hidden>Reset</button>
     </div>
 
     <div class="sky__steps" id="sky-steps" hidden>
       <h3>How to read this</h3>
       <ol>
         <li><i>01</i><span>Each star is one of the <b>1,000 films</b>.</span></li>
-        <li><i>02</i><span><b>Bigger and brighter</b> means rated higher. Five sizes, shown in the key.</span></li>
-        <li><i>03</i><span><b>Where it sits</b> is its genre mix, so films between clusters belong to several.</span></li>
+        <li><i>02</i><span><b>Bigger and brighter</b> means rated higher, in five steps from 7.6 to 9.3.</span></li>
+        <li><i>03</i><span><b>Where it sits</b> is its genre mix. Zoom in to 16&times; to pull a crowded cluster apart.</span></li>
       </ol>
       <button type="button" id="sky-steps-go">Explore</button>
     </div>
@@ -131,7 +131,7 @@ __STYLES__
     <div class="sky__key">
       <span class="sky__key-title">IMDb rating</span>
       <span class="sky__key-row" id="sky-key-row"></span>
-      <span class="sky__key-note">Sizes are relative within 7.6&ndash;9.3, not to scale</span>
+      <span class="sky__key-note">Five steps between. Sizes relative within the range, not to scale</span>
     </div>
   </div>
 

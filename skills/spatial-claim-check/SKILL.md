@@ -120,6 +120,11 @@ other. Three fixes, in order of how often they are forgotten:
 3. **Re-run label layout after the webfont swaps.** Relaxation measures rendered
    text, so if it runs before the font arrives the whole arrangement is solved
    against fallback metrics and is quietly wrong on every cold load.
+4. **Drop a label whose anchor has left the frame.** Clamping names inside the box
+   is right at 1:1 and wrong under any view transform: zoomed in, most anchors are
+   off-screen and the clamp stacks four names in the same corner. The relaxation
+   then separates that pile, so the names are legible, in the wrong place, and
+   pointing at nothing. Test this at your maximum zoom, not at rest.
 
 Verify by counting overlapping label pairs at your narrowest and widest breakpoints.
 The answer should be zero, and it is cheap to assert.
@@ -145,6 +150,40 @@ Two rules follow:
   as life; the same effect in unison reads as the whole chart pulsing, which the
   reader will assume means something. Measure it: sample a patch across frames and
   check the aggregate barely moves even though individual marks do.
+- **A translucent mark leaks whatever is animating behind it**, in proportion to
+  one minus its opacity — and opacity is very often part of the encoding, which
+  means the marks that leak most are exactly the ones carrying the lowest values.
+  Putting the twinkle on a halo and keeping the disc fixed is not enough if the
+  halo is drawn underneath a disc that is only 58% opaque: measured here at 6.1%
+  variation on the mark whose brightness *is* its value. Clear the centre out of
+  whatever animates, at a radius that stays inside the mark at every zoom level.
+  Verify by sampling the mark's own pixels across a full cycle, not the glow
+  around it.
+
+### 6c — If you offer zoom, zoom the layout and not the marks
+
+Zoom exists here for one reason: to pull apart a cluster too dense to pick from.
+That only works if separation outgrows mark size, so the mark scale has to be
+sublinear in the zoom factor. It is also worth putting a knee in it: grow marks
+normally until the smallest is comfortably clickable — about 10px — then almost
+stop, and spend the rest of the range entirely on separation. Without the knee,
+every further step re-inflates the discs it just separated, and the ceiling you
+can usefully offer is two or three times lower than it needs to be.
+
+Glow, bloom, shadows and spikes get their own, much earlier ceiling. They are
+rendering artefacts rather than measurements, and a flare that widens as the
+reader leans in turns a legible field into soup at exactly the moment they were
+trying to read it.
+
+One interaction rule that is not about the data at all, and is the easiest thing
+in this whole document to get wrong: **a control must not move when pressing it
+changes what else is on the toolbar.** A Reset that appears beside + the moment
+you first zoom, in a group anchored to one edge, pushes + out from under the
+hand between the first press and the second. Put the control that comes and goes
+at the far end of the group, or reserve its space.
+
+Verify by measuring the position of each control at rest and at full zoom. The
+numbers should be identical.
 
 ### 7 — Stated caveat, and exposed coordinates
 

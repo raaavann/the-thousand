@@ -266,7 +266,7 @@ my own skill had let through:
   8.1, four fifths of the collection was drawn in the bottom third of the
   brightness range. My check asked whether a mark could be *resolved*. It never
   asked whether the *scale* could be read. Now five graduated classes, breaks
-  following the real distribution, all of them in the legend with counts.
+  following the real distribution, and a legend that declares the scale.
 - Radius ran 1× to 3.7×, so area grew 13.7× across a range whose real spread is
   22%. A lie factor near 57. Nothing in the skill covered exaggeration at all; the
   legend now says "relative within 7.6–9.3, not to scale."
