@@ -93,14 +93,17 @@
       }));
   }
 
+  // The same five classes the constellation's legend shows. The old bands were
+  // 0.4, 0.3 and 0.2 wide, which is three rules in one column with nothing on
+  // the page explaining any of them. Breaks follow the distribution, which is
+  // heavily right-skewed, so they tighten as they climb: equal-width bands would
+  // have put four fifths of the collection into a single row.
   const ACCLAIM_BANDS = [
-    { min: 9.0, title: 'Nine and above', note: 'The summit. A handful of films almost nobody argues with.' },
-    { min: 8.7, title: '8.7–8.9',      note: '' },
-    { min: 8.4, title: '8.4–8.6',      note: '' },
-    { min: 8.2, title: '8.2–8.3',      note: '' },
-    { min: 8.0, title: '8.0–8.1',      note: '' },
-    { min: 7.8, title: '7.8–7.9',      note: '' },
-    { min: 0,   title: '7.6–7.7',      note: 'The threshold. Everything below this simply is not in the collection.' }
+    { min: 8.8, title: '8.8 and above', note: 'Thirteen films. The thin end of a very long tail.' },
+    { min: 8.5, title: '8.5 – 8.7',     note: '' },
+    { min: 8.2, title: '8.2 – 8.4',     note: '' },
+    { min: 7.9, title: '7.9 – 8.1',     note: '' },
+    { min: 0,   title: '7.6 – 7.8',     note: 'The threshold, and the largest group. Below 7.6 is not in the collection at all.' }
   ];
 
   const RUNTIME_BANDS = [
@@ -157,13 +160,15 @@
 
   /* --- 6. Chrome: standfirst, spine, controls -------------------------------- */
 
+  // One line. The four-column figure block read as a second headline and
+  // competed with the chart it was supposed to be introducing.
   $('figures').innerHTML = [
-    ['Films', nf.format(films.length)],
-    ['Directors', nf.format(directorCount)],
-    ['Genres', String(genresByFreq.length)],
-    ['Span', films.reduce((m, f) => Math.min(m, f.year), 9999) + '–' +
-             films.reduce((m, f) => Math.max(m, f.year), 0)]
-  ].map(r => '<div><dt>' + r[0] + '</dt><dd class="tnum">' + r[1] + '</dd></div>').join('');
+    nf.format(films.length) + ' films',
+    nf.format(directorCount) + ' directors',
+    genresByFreq.length + ' genres',
+    films.reduce((m, f) => Math.min(m, f.year), 9999) + '–' +
+      films.reduce((m, f) => Math.max(m, f.year), 0)
+  ].map(x => '<span class="tnum">' + x + '</span>').join('<i>\u00b7</i>');
 
   $('spine').innerHTML = decades.map(d =>
     '<button class="decade" type="button" data-decade="' + d + '" aria-pressed="false" ' +
@@ -174,7 +179,9 @@
       // number under it encodes the same fact twice while crowding eleven
       // columns into a strip seven grid-columns wide. The figure surfaces on
       // hover instead, in the readout that has room for it.
-      '<span class="decade__foot">' + ordinalDecade(d) + '</span>' +
+      '<span class="decade__foot">' + ordinalDecade(d) +
+        (d === 2020 ? '<em title="2020 only, not a full decade">*</em>' : '') +
+      '</span>' +
     '</button>').join('');
 
   // Hovering a decade names it and its count; leaving restores whatever is
@@ -193,11 +200,32 @@
     '<button type="button" data-arrange="' + k + '" aria-pressed="' +
     (k === state.arrange) + '">' + ARRANGEMENTS[k].label + '</button>').join('');
 
+  // Twenty-one tabs overflowed the row, so two thirds of the control sat off
+  // screen while the chart carried the same filter anyway. Eight, then the rest
+  // one click away.
+  const RAIL_SHOWN = 8;
+  const genreBtn = g =>
+    '<button type="button" data-genre="' + esc(g) + '" aria-pressed="false">' +
+    esc(g) + '<sup class="tnum">' + genreCounts[g] + '</sup></button>';
+
   $('genres').innerHTML =
     '<button type="button" data-genre="" aria-pressed="true">All genres</button>' +
-    genresByFreq.map(g =>
-      '<button type="button" data-genre="' + esc(g) + '" aria-pressed="false">' +
-      esc(g) + '<sup class="tnum">' + genreCounts[g] + '</sup></button>').join('');
+    genresByFreq.slice(0, RAIL_SHOWN).map(genreBtn).join('') +
+    '<span class="rail__rest" id="rail-rest" hidden>' +
+      genresByFreq.slice(RAIL_SHOWN).map(genreBtn).join('') +
+    '</span>' +
+    '<button type="button" class="rail__more" id="rail-more" aria-expanded="false">+' +
+      (genresByFreq.length - RAIL_SHOWN) + ' more</button>';
+
+  $('rail-more').addEventListener('click', e => {
+    e.stopPropagation();
+    const rest = $('rail-rest');
+    const open = rest.hidden;
+    rest.hidden = !open;
+    e.currentTarget.setAttribute('aria-expanded', String(open));
+    e.currentTarget.textContent = open ? 'Fewer'
+      : '+' + (genresByFreq.length - RAIL_SHOWN) + ' more';
+  });
 
   /* --- 7. Render ------------------------------------------------------------- */
 
@@ -222,8 +250,6 @@
       '<span class="tile__rank tnum" aria-hidden="true">' + f.rank + '</span>' +
       '<span class="tile__cap" aria-hidden="true"><b>' + cap + '</b>' +
         '<span class="tnum">' + f.year + ' · ' + f.rating.toFixed(1) + '</span></span>' +
-      '<i class="tile__rating" style="--w:' +
-        (6 + ratingFrac(f) * 94).toFixed(1) + '%"></i>' +
     '</button>';
   }
 
@@ -311,6 +337,8 @@
         onPick: i => openPlate(i, $('sky-canvas')),
         onGenre: g => { setGenre(g); },
         onPreview: g => paintRailPreview(g),
+        onHint: kind => showHint(kind),
+        onCrowd: list => showCrowd(list),
         onZoom: z => {
           $('zoom-read').textContent = z.toFixed(1) + '\u00d7';
           $('zoom-reset').hidden = z <= 1.001;
@@ -325,11 +353,75 @@
       });
     }
     sky.mount();
+    maybeShowSteps();
   }
 
   // Exposed on purpose: the piece states a claim about what distance means, and
   // anyone should be able to pull the coordinates out and test it.
   window.__spatialAudit = () => (sky ? sky.positions() : null);
+
+  /* --- 7c. First-run coaching, gesture hint, crowded picks ------------------ */
+
+  // Segel and Heer's martini glass: a short author-led path first, then open
+  // exploration. Shown once. A reader who already knows how to read the chart
+  // should not have to dismiss an explanation of it on every visit.
+  const SEEN = 'thousand.seen.v1';
+  function maybeShowSteps() {
+    let seen = false;
+    try { seen = localStorage.getItem(SEEN) === '1'; } catch (e) { seen = false; }
+    if (!seen) $('sky-steps').hidden = false;
+  }
+  $('sky-steps-go').addEventListener('click', () => {
+    $('sky-steps').hidden = true;
+    try { localStorage.setItem(SEEN, '1'); } catch (e) { /* private mode: show again */ }
+  });
+
+  // The gesture contract is stated, not inferred. The old timing heuristic meant
+  // the same scroll sometimes zoomed and sometimes did not, which no reader can
+  // predict. Now a plain wheel always scrolls the page and says how to zoom.
+  let hintShown = 0, hintTimer = 0;
+  const MOD = /Mac|iPhone|iPad/.test(navigator.platform || '') ? '\u2318' : 'Ctrl';
+  function showHint(kind) {
+    if (kind !== 'zoom' || hintShown >= 3) return;
+    const el = $('sky-hint');
+    if (el.classList.contains('is-on')) return;
+    hintShown++;
+    el.innerHTML = 'Hold <kbd>' + MOD + '</kbd> and scroll to zoom, or use the buttons';
+    el.classList.add('is-on');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => el.classList.remove('is-on'), 2600);
+  }
+
+  // Several films inside one pick radius is an ambiguity, and silently taking
+  // the nearest is a coin toss the reader cannot see or correct.
+  let crowdFor = null;
+  function showCrowd(list) {
+    const el = $('sky-crowd');
+    if (!list || list.length < 2) {
+      if (!el.matches(':hover')) { el.hidden = true; crowdFor = null; }
+      return;
+    }
+    const sig = list.map(f => f.i).join(',');
+    if (sig === crowdFor) return;
+    crowdFor = sig;
+    el.innerHTML = '<div class="sky__crowd-h">' + list.length + ' films here</div>' +
+      list.map(f => '<button type="button" data-i="' + f.i + '">' +
+        esc(f.title) + '<span class="tnum">' + f.rating.toFixed(1) + '</span></button>').join('');
+    el.hidden = false;
+    const st = $('sky-stage').getBoundingClientRect();
+    const tip = $('sky-tip').getBoundingClientRect();
+    let x = tip.left - st.left;
+    let y = tip.bottom - st.top + 8;
+    if (y + el.offsetHeight > st.height - 10) {
+      y = Math.max(10, tip.top - st.top - el.offsetHeight - 8);
+    }
+    el.style.left = Math.max(8, Math.min(st.width - el.offsetWidth - 8, x)) + 'px';
+    el.style.top = y + 'px';
+  }
+  $('sky-crowd').addEventListener('click', e => {
+    const b = e.target.closest('button[data-i]');
+    if (b) { openPlate(+b.dataset.i, $('sky-canvas')); $('sky-crowd').hidden = true; }
+  });
 
   /* --- 8. The plate ---------------------------------------------------------- */
 

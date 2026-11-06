@@ -42,6 +42,35 @@
   }
 
   const GOLDEN = Math.PI * (3 - Math.sqrt(5));
+
+  /* ── Rating classes ───────────────────────────────────────────────────────
+     Graduated symbols, not a continuous scale. Cleveland and McGill put area
+     and lightness near the bottom of the accuracy ranking, so a continuous ramp
+     invites a reading nobody can actually perform: you cannot see 8.1 against
+     8.3 in a dot's area. Five fixed sizes you *can* match against a legend.
+
+     The breaks follow the real distribution, which is severely right-skewed —
+     805 of 1,000 films sit between 7.6 and 8.1 — so the classes tighten as they
+     climb. Equal-width classes would have put four fifths of the collection in
+     one bucket and left the top three nearly empty.
+
+     Colour carries depth by aerial perspective, not blur: as things recede they
+     lose contrast and shift cool, which is how distance actually looks. Blur
+     would hide detail and, worse, make small targets harder to hit. Every star
+     stays sharp at every class.
+
+     lo is inclusive, hi exclusive, except for the last class. */
+  const CLASSES = [
+    { lo: 7.6, hi: 7.9, label: '7.6–7.8', n: 431, r: 1.00, ink: [166, 146, 110], a: 0.58, glow: 0.16 },
+    { lo: 7.9, hi: 8.2, label: '7.9–8.1', n: 374, r: 1.34, ink: [199, 180, 137], a: 0.70, glow: 0.23 },
+    { lo: 8.2, hi: 8.5, label: '8.2–8.4', n: 142, r: 1.76, ink: [226, 210, 168], a: 0.82, glow: 0.31 },
+    { lo: 8.5, hi: 8.8, label: '8.5–8.7', n:  40, r: 2.26, ink: [243, 233, 203], a: 0.93, glow: 0.40 },
+    { lo: 8.8, hi: 9.4, label: '8.8–9.3', n:  13, r: 2.86, ink: [255, 250, 232], a: 1.00, glow: 0.50 }
+  ];
+  function classOf(rating) {
+    for (let i = CLASSES.length - 1; i >= 0; i--) if (rating >= CLASSES[i].lo) return i;
+    return 0;
+  }
   const PARALLAX = 13;          // px at the extreme corner, for the nearest star
 
   function createSky(opts) {
@@ -53,6 +82,8 @@
     const onGenre = opts.onGenre;
     const onPreview = opts.onPreview;      // (genre|null) — mirrors into the rail
     const onCursor = opts.onCursor;
+    const onHint = opts.onHint;              // (kind) => void, first-use coaching
+    const onCrowd = opts.onCrowd;            // (films[]|null) => void, dense picks
     const onZoom = opts.onZoom;
 
     const stage = opts.stage;
@@ -174,6 +205,31 @@
     let halo = null, core = null;
     let lastVisible = null;
 
+    // Background dust: 220 specks that are not films and encode nothing. This is
+    // where the sky gets to feel alive. Because they carry no value, they are
+    // free to twinkle and to parallax, and because they sit behind the data at a
+    // fraction of its brightness they read as depth without competing with it.
+    // The stars themselves stay fixed and steady.
+    let dust = [];
+    function buildDust() {
+      const rnd = mulberry32(90210);
+      dust = [];
+      for (let i = 0; i < 430; i++) {
+        const depth = rnd();                       // 0 far … 1 near
+        const warm = rnd();
+        dust.push({
+          x: rnd() * W, y: rnd() * H,
+          r: 0.3 + depth * 0.95,
+          a: 0.05 + depth * 0.17,
+          par: 0.25 + depth * 1.45,                // near dust moves most
+          ph: rnd() * Math.PI * 2,
+          sp: 0.4 + rnd() * 1.0,
+          // Mostly warm, a few cool, like any real field of faint stars.
+          c: warm < 0.72 ? '#f2dcae' : (warm < 0.9 ? '#fff3d6' : '#bcc8e0')
+        });
+      }
+    }
+
     function sprite(px, stops) {
       const c = document.createElement('canvas');
       c.width = c.height = px;
@@ -190,10 +246,10 @@
       // repaint and a 200ms one. The halo is wide and soft, the core tight —
       // mixing them by depth is what produces the focus falloff.
       halo = sprite(128, [
-        [0,    'rgba(255,244,224,0.80)'],
-        [0.13, 'rgba(255,238,208,0.38)'],
-        [0.36, 'rgba(252,230,196,0.11)'],
-        [1,    'rgba(250,226,190,0)']
+        [0,    'rgba(255,236,190,0.82)'],
+        [0.13, 'rgba(255,222,160,0.38)'],
+        [0.34, 'rgba(248,204,132,0.12)'],
+        [1,    'rgba(242,196,124,0)']
       ]);
       core = sprite(64, [
         [0,    'rgba(255,252,246,1)'],
@@ -206,9 +262,12 @@
     /* --- layout ------------------------------------------------------------ */
 
     function layout() {
-      const pad = Math.max(64, Math.min(W, H) * 0.115);
+      const pad = Math.max(44, Math.min(W, H) * 0.085);
       const boxW = W - pad * 2, boxH = H - pad * 2;
-      const pts = computeAnchors(boxW / boxH);
+
+      // ONE solve, at a fixed reference aspect, cached for the life of the page.
+      const REF_ASPECT = 1.6;
+      let pts = computeAnchors(REF_ASPECT).map(p => ({ x: p.x, y: p.y }));
 
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
       pts.forEach(p => {
@@ -216,18 +275,28 @@
         if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
       });
 
-      const ANISO = 1.45;
-      const sx = boxW / ((maxX - minX) || 1);
-      const sy = boxH / ((maxY - minY) || 1);
-      const base = Math.min(sx, sy);
-      const scaleX = Math.min(sx, base * ANISO);
-      const scaleY = Math.min(sy, base * ANISO);
-      const offX = pad + (boxW - (maxX - minX) * scaleX) / 2 - minX * scaleX;
-      const offY = pad + (boxH - (maxY - minY) * scaleY) / 2 - minY * scaleY;
+      // Turn the solution a quarter if that aligns its long axis with the
+      // frame's. Every distance is preserved, so this is the same map either
+      // way — a desktop and a phone get one arrangement, not two.
+      const graphLandscape = (maxX - minX) >= (maxY - minY);
+      const frameLandscape = boxW >= boxH;
+      if (graphLandscape !== frameLandscape) {
+        pts = pts.map(p => ({ x: maxY - p.y, y: p.x - minX }));
+        const w = maxY - minY, h = maxX - minX;
+        minX = 0; maxX = w; minY = 0; maxY = h;
+      }
+
+      // Uniform scale, both axes. Stretching one axis would distort exactly the
+      // distances the layout exists to communicate; empty margin is the honest
+      // trade and reads as sky.
+      const spanX = (maxX - minX) || 1, spanY = (maxY - minY) || 1;
+      const scale = Math.min(boxW / spanX, boxH / spanY);
+      const offX = pad + (boxW - spanX * scale) / 2 - minX * scale;
+      const offY = pad + (boxH - spanY * scale) / 2 - minY * scale;
 
       anchors = {};
       genres.forEach((g, i) => {
-        anchors[g] = { x: pts[i].x * scaleX + offX, y: pts[i].y * scaleY + offY };
+        anchors[g] = { x: pts[i].x * scale + offX, y: pts[i].y * scale + offY };
       });
 
       const unit = Math.min(W, H);
@@ -272,23 +341,23 @@
         group.forEach((f, i) => {
           const ang = i * GOLDEN + rnd() * 0.0001;
           const rad = local * Math.sqrt(i + 0.45);
-          const z = ratingFrac(f);                    // 0 far … 1 near
+          const ci = classOf(f.rating);
+          const C = CLASSES[ci];
           stars.push({
             f: f,
             x: cx + jx + Math.cos(ang) * rad,
             y: cy + jy + Math.sin(ang) * rad,
-            z: z,
-            r: rBase * (1.0 + 2.7 * z),
-            // Depth of field: a far star is a wide dim smudge with almost no
-            // core; a near one is a tight bright point. Both channels move
-            // together with rating, so "in focus" and "highly rated" are the
-            // same fact seen twice.
-            spread: 5.6 + (1 - z) * 5.2,
-            focus: 0.18 + 0.82 * z,
-            par: 0.28 + 0.72 * z,
-            base: 0.30 + 0.70 * z,
-            tw: rnd() * Math.PI * 2,            // phase
-            tws: 0.55 + rnd() * 0.75,           // rate, seconds
+            cls: ci,
+            z: ci / (CLASSES.length - 1),       // 0 far … 1 near, by class
+            r: rBase * C.r,
+            ink: C.ink,
+            // A floor, not a ramp to zero. The faintest class is 431 films —
+            // the largest single group in the collection — so it has to stay
+            // clearly visible against the sky rather than fading to a smudge.
+            base: C.a,
+            glow: C.glow,
+            ph: rnd() * Math.PI * 2,            // twinkle phase, glow only
+            sp: 0.5 + rnd() * 0.8,
             a: 0, ta: 0, on: true
           });
         });
@@ -359,8 +428,11 @@
     // Hit-testing calls exactly these, so a target is never where it isn't.
     const SX = wx => wx * zoom + panX;
     const SY = wy => wy * zoom + panY;
-    const px_ = s => SX(s.x) + parX * s.par;
-    const py_ = s => SY(s.y) + parY * s.par;
+    // Position encodes genre, so shifting a star under the pointer shifts its
+    // meaning — and moves the thing the reader is trying to click. Stars are
+    // fixed; only the dust parallaxes, which is enough to read as depth.
+    const px_ = s => SX(s.x);
+    const py_ = s => SY(s.y);
 
     // Stars grow more slowly than the field does. Separation therefore outpaces
     // size as you zoom, which is the whole point: a star that was unclickable
@@ -408,6 +480,33 @@
       canvas.style.touchAction = tZoom > 1.001 ? 'none' : 'pan-y';
     }
 
+    // Everything inside the pick radius, nearest first. One is a pick; several
+    // is an ambiguity the reader should get to resolve.
+    function starsAt(mx, my, limit) {
+      if (!cells) return [];
+      const found = [];
+      const cz = Math.max(1, cellSize * zoom);
+      const cx = Math.max(0, Math.min(cols - 1, ((mx - panX) / zoom / cellSize) | 0));
+      const cy = Math.max(0, Math.min(rows - 1, ((my - panY) / zoom / cellSize) | 0));
+      const span = cz < 26 ? 2 : 1;
+      for (let dy = -span; dy <= span; dy++) {
+        for (let dx = -span; dx <= span; dx++) {
+          const b = cells.get((cy + dy) * cols + (cx + dx));
+          if (!b) continue;
+          for (let i = 0; i < b.length; i++) {
+            const st = stars[b[i]];
+            if (st.a < 0.2) continue;
+            const d = Math.hypot(px_(st) - mx, py_(st) - my);
+            const hit = coarse.matches ? Math.max(st.r * rz() + 12, 18)
+                                       : Math.max(st.r * rz() + 8, 12);
+            if (d < hit) found.push({ s: st, d: d });
+          }
+        }
+      }
+      found.sort((a, b) => a.d - b.d);
+      return found.slice(0, limit || 6).map(o => o.s);
+    }
+
     function starAt(mx, my) {
       if (!cells) return null;
       // Candidates come from the world-space grid; the comparison happens in
@@ -452,8 +551,15 @@
     let labelState = [];
 
     function buildLabels() {
+      // Three size steps by genre size. Thresholds sit at natural gaps in the
+      // distribution: 21 genres run from Drama at 724 down to Musical at 17.
+      const tier = g => {
+        const n = size[gi[g]];
+        return n >= 180 ? 'lg' : (n >= 60 ? 'md' : 'sm');
+      };
       labelLayer.innerHTML = genres.map(g =>
-        '<button type="button" class="sky__label" data-genre="' + g + '">' + g + '</button>').join('');
+        '<button type="button" class="sky__label" data-tier="' + tier(g) +
+        '" data-genre="' + g + '">' + g + '</button>').join('');
       labelState = Array.from(labelLayer.children).map(el => {
         const r = el.getBoundingClientRect();
         const g = el.dataset.genre;
@@ -522,18 +628,34 @@
 
     /* --- drawing ------------------------------------------------------------ */
 
-    // 1 at rest, 0.93 to 1.07 when the field is alive.
+    // Brightness encodes rating, so modulating a star's brightness modulates its
+    // value: a film would look better or worse from one moment to the next. The
+    // twinkle moves to the dust layer below, which carries no data and is free
+    // to shimmer as much as it likes.
     let clock = 0, ambient = false;
-    function tw(s) {
-      if (!ambient) return 1;
-      return 1 + 0.07 * (Math.sin(clock * s.tws + s.tw) * 0.62 +
-                         Math.sin(clock * s.tws * 1.73 + s.tw * 2.1) * 0.38);
-    }
 
     function draw() {
       relaxLabels(8);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, W, H);
+
+      // 0 — dust. Not data: it is the only thing in the frame allowed to move.
+      if (dust.length) {
+        for (let i = 0; i < dust.length; i++) {
+          const d = dust[i];
+          const tw = ambient
+            ? 1 + 0.62 * (Math.sin(clock * d.sp + d.ph) * 0.6 +
+                          Math.sin(clock * d.sp * 1.7 + d.ph * 2.3) * 0.4)
+            : 1;
+          const x = d.x + parX * d.par, y = d.y + parY * d.par;
+          ctx.globalAlpha = Math.max(0, Math.min(0.34, d.a * tw));
+          ctx.fillStyle = d.c;
+          ctx.beginPath();
+          ctx.arc(x, y, d.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
 
       // 1 — the co-occurrence graph, as the faintest possible structure.
       ctx.globalCompositeOperation = 'source-over';
@@ -554,40 +676,47 @@
         ctx.beginPath(); ctx.arc(SX(A.x), SY(A.y), 3.2, 0, Math.PI * 2); ctx.stroke();
       });
 
-      // 3 — the field, back to front so near stars overlap far ones correctly.
-      ctx.globalCompositeOperation = 'lighter';
-      const k = rz(), kGlow = rzGlow();
-      // Pull the bloom back further still as the lens closes in, so a zoomed
-      // field resolves into separate points rather than a single wash.
-      const glowFade = 1 / (1 + (zoom - 1) * 0.28);
-      const crisp = Math.min(1, Math.max(0, (zoom - 1.2) / 1.1));
+      // 3 — the field, far classes first so near ones sit on top.
+      ctx.globalCompositeOperation = 'source-over';
+      const k = rz();
+      // Normal blending with a capped opacity, NOT additive. Where 724 Drama
+      // films overlap, 'lighter' sums to flat white and the densest, most
+      // interesting part of the collection becomes the one part you cannot read.
+      // Overdraw hides outliers and erases the shape of the data; capped
+      // source-over keeps a dense knot dark-edged and countable.
+      //
+      // Each star is drawn as a disc, not a sprite, so it stays crisp at every
+      // zoom level. The faint halo behind the two brightest classes is the only
+      // soft element left, and it is capped too.
       for (let i = 0; i < order.length; i++) {
         const s = order[i];
         if (s.a < 0.012) continue;
         const x = px_(s), y = py_(s);
-        if (x < -80 || x > W + 80 || y < -80 || y > H + 80) continue;  // outside the lens
-        const R = s.r * s.spread * kGlow;
-        ctx.globalAlpha = s.a * (0.46 - 0.14 * s.z) * glowFade;
-        ctx.drawImage(halo, x - R, y - R, R * 2, R * 2);
-        const c = s.r * (1.5 + 0.6 * s.z) * k;
-        ctx.globalAlpha = Math.min(1, s.a * s.focus * 1.25 * tw(s));
-        ctx.drawImage(core, x - c, y - c, c * 2, c * 2);
+        if (x < -60 || x > W + 60 || y < -60 || y > H + 60) continue;
+        const rr = Math.max(0.8, s.r * k);
+        const ink = s.ink;
 
-        // A sprite blurs as it scales, so a magnified star turns into a smudge
-        // exactly when the reader has zoomed in to look at it properly. Past a
-        // little magnification each one also gets a drawn centre, which stays
-        // sharp at any size. Below that threshold the soft sprite alone is what
-        // makes the field read as a nebula, so it is left alone.
-        if (crisp > 0) {
-          ctx.globalAlpha = Math.min(1, s.a * s.focus * tw(s)) * crisp;
-          ctx.fillStyle = '#fffaf0';
-          ctx.beginPath();
-          ctx.arc(x, y, Math.max(0.7, s.r * k * 0.46), 0, Math.PI * 2);
-          ctx.fill();
+        // The glow shimmers. Independent phase per star, so the field never
+        // pulses in unison — and it is only ever the halo, so the measured
+        // value underneath is untouched.
+        if (s.glow > 0) {
+          const tw = ambient
+            ? 1 + 0.46 * (Math.sin(clock * s.sp + s.ph) * 0.62 +
+                          Math.sin(clock * s.sp * 1.71 + s.ph * 2.3) * 0.38)
+            : 1;
+          const R = rr * 6.4;
+          ctx.globalAlpha = Math.max(0, Math.min(0.55, s.a * s.glow * tw));
+          ctx.drawImage(halo, x - R, y - R, R * 2, R * 2);
         }
+
+        // The disc is the datum. Fixed opacity, always.
+        ctx.globalAlpha = Math.min(0.96, s.a);
+        ctx.fillStyle = 'rgb(' + ink[0] + ',' + ink[1] + ',' + ink[2] + ')';
+        ctx.beginPath();
+        ctx.arc(x, y, rr, 0, Math.PI * 2);
+        ctx.fill();
       }
       ctx.globalAlpha = 1;
-      ctx.globalCompositeOperation = 'source-over';
 
       // 4 — leaders for any label the relaxation had to move, then scrims.
       ctx.lineWidth = 1;
@@ -641,6 +770,18 @@
         ctx.globalCompositeOperation = 'source-over';
 
         ring(fx, fy, focus.r * 3.6 * rz() + 6, 'rgba(255,250,240,.92)');
+      }
+
+      // The ring on whatever the next click would take, drawn before the click.
+      if (hover && hover !== cursor) {
+        const hx = px_(hover), hy = py_(hover);
+        ctx.strokeStyle = 'rgba(203,167,108,.5)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 3]);
+        ctx.beginPath();
+        ctx.arc(hx, hy, Math.max(12, hover.r * rz() + 9), 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
       }
 
       if (currentIdx !== null) {
@@ -776,13 +917,15 @@
       if (!keyEl) return;
       const unit = Math.min(W, H);
       const rBase = Math.max(1, unit * 0.0026);
-      keyEl.innerHTML = [7.6, 8.5, 9.3].map(v => {
-        const z = (v - 7.6) / (9.3 - 7.6);
-        const d = Math.max(3, Math.round(rBase * (1.0 + 2.7 * z) * 2.1));
-        const o = (0.30 + 0.70 * z).toFixed(2);
+      keyEl.innerHTML = CLASSES.map(C => {
+        const d = Math.max(4, Math.round(rBase * C.r * 2));
+        const ink = 'rgb(' + C.ink.join(',') + ')';
         return '<span class="sky__key-item">' +
-          '<i class="sky__key-dot" style="width:' + d + 'px;height:' + d + 'px;opacity:' + o + '"></i>' +
-          '<span>' + v.toFixed(1) + '</span></span>';
+          '<i class="sky__key-dot" style="width:' + d + 'px;height:' + d + 'px;' +
+            'background:' + ink + ';opacity:' + C.a.toFixed(2) + '"></i>' +
+          '<b>' + C.label + '</b>' +
+          '<span class="sky__key-n">' + C.n + '</span>' +
+        '</span>';
       }).join('');
     }
 
@@ -800,6 +943,7 @@
       canvas.style.width = W + 'px';
       canvas.style.height = H + 'px';
       if (!halo) buildSprites();
+      buildDust();
       zoom = 1; tZoom = 1; panX = 0; panY = 0;
       anchorSX = anchorSY = anchorWX = anchorWY = 0;
       setTouchAction();
@@ -823,17 +967,22 @@
       const r = canvas.getBoundingClientRect();
       const mx = e.clientX - r.left, my = e.clientY - r.top;
       setParallaxFromPointer(mx, my);
-      const s = starAt(mx, my);
+      const near = starsAt(mx, my, 5);
+      const s = near[0] || null;
       if (s !== hover) {
         hover = s;
         canvas.style.cursor = s ? 'pointer' : (zoom > 1 ? 'grab' : 'default');
         showTip(s || cursor);
       } else if (s) showTip(s);
+      // Two or more films inside the pick radius is an ambiguity, and taking the
+      // nearest silently is a coin toss the reader cannot see. Offer the set.
+      if (onCrowd) onCrowd(near.length > 1 ? near.map(st => st.f) : null);
       run();
     });
 
     canvas.addEventListener('mouseleave', () => {
       hover = null;
+      if (onCrowd) onCrowd(null);
       tParX = 0; tParY = 0;
       showTip(cursor);
       run();
@@ -853,20 +1002,18 @@
     stage.addEventListener('pointerleave', () => { pointerSettledAt = 0; });
 
     canvas.addEventListener('wheel', e => {
-      const now = performance.now();
-      // Mid page-scroll, or the pointer only just crossed into the field: the
-      // page keeps the wheel.
-      if (now - lastPageScroll < 500) return;
-      if (!pointerSettledAt || now < pointerSettledAt) return;
-
+      // A trackpad pinch arrives as ctrlKey+wheel, so this covers pinch-to-zoom
+      // on a laptop as well as the explicit modifier on a mouse.
+      if (!e.ctrlKey && !e.metaKey) {
+        if (onHint) onHint('zoom');     // tell them how, once
+        return;                          // the page keeps the wheel
+      }
       const dy = e.deltaY;
-      // At either end of the range the wheel goes back to the document too, so a
-      // reader can always leave.
-      if ((zoom <= MINZ + 1e-4 && dy > 0) || (zoom >= MAXZ - 1e-4 && dy < 0)) return;
+      if ((tZoom <= MINZ + 1e-4 && dy > 0) || (tZoom >= MAXZ - 1e-4 && dy < 0)) return;
       e.preventDefault();
       const r = canvas.getBoundingClientRect();
       const mx = e.clientX - r.left, my = e.clientY - r.top;
-      if (zoomAt(mx, my, Math.exp(-dy * 0.0018))) {
+      if (zoomAt(mx, my, Math.exp(-dy * 0.0022))) {
         setParallaxFromPointer(mx, my);
         run();
       }
