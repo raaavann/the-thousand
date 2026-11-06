@@ -2,6 +2,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..700&family=IBM+Plex+Mono:wght@400;500&family=Libre+Franklin:ital,wght@0,300..700;1,300..500&display=swap" rel="stylesheet">
+
 <style>
 /* ============================================================================
    Spatial Claim Check — a calibration plate
@@ -374,7 +375,6 @@ pre.snip i{ color:var(--ink-4); font-style:normal; }
   *{ transition-duration:.001ms !important; animation-duration:.001ms !important; }
 }
 </style>
-
 <header class="masthead wrap">
   <p class="masthead__eyebrow mono">A data-visualisation skill <i></i> DE705 <i></i> spatial-claim-check</p>
   <h1>Does <em>position</em> mean anything?</h1>
@@ -616,7 +616,7 @@ base  = overall label prevalence</pre>
           <tr class="is-emph"><td>— three-genre films, the premise</td><td>46.9%</td><td>67.2%</td></tr>
           <tr><td>Genres with no films near their label</td><td>4 of 21</td><td>0 of 21</td></tr>
           <tr><td>Deterministic across reloads</td><td>no</td><td>yes</td></tr>
-          <tr><td>Rating encoded</td><td>not at all</td><td>radius + brightness</td></tr>
+          <tr><td>Rating encoded</td><td>not at all</td><td>radius, lightness, spikes</td></tr>
           <tr><td>Caveat in the artifact</td><td>none</td><td>one sentence, in frame</td></tr>
           <tr><td>Coordinates auditable</td><td>no</td><td>yes</td></tr>
         </tbody>
@@ -649,6 +649,28 @@ base  = overall label prevalence</pre>
         the weakest visual channels, an unstated 13.7× area exaggeration, and a
         twinkle modulating the very channel that encoded rating. All three are
         folded back into the skill.</p>
+      <p><strong>A fourth pass, on a sentence no check would ever have produced:
+        it still does not look like stars.</strong> It did not, and the reason was
+        measurable. Spike length was a multiple of the mark radius, and the faintest
+        class's mark is 2.7&nbsp;px across, so its cross rendered sub-pixel and averaged
+        to nothing in the blit &mdash; probed at zero light beyond 3&nbsp;px from centre.
+        Four fifths of the field had no star character at all, which is why
+        every previous attempt, all of them spent on the brightest fifth, had
+        changed nothing. Spike length now starts from a floor in field units and
+        the class extends it: axis light against diagonal light at the same radius
+        runs 37&times; for the faintest class and 2.4&times; for the brightest, whose
+        own halo is bright on the diagonals too.</p>
+      <p>Chasing that turned up a leak none of the earlier passes had thought to
+        look for. Opacity is half of how rating is encoded here, so a mark is drawn
+        at between 58% and 96% &mdash; and leaks whatever is animating behind it at
+        the difference. Behind it was the halo, and the halo is the thing that
+        twinkles. The disc of a faint star, whose brightness is supposed to
+        <em>be</em> its rating, was varying 6.1% on its own. Clearing the centre out
+        of both the halo and the spike sprite, at a radius that stays inside the
+        mark at every zoom level, brings that to 2.2% on the faintest and 0.1% on
+        the brightest, against a 20% step between adjacent classes. The rule in the
+        skill said to keep motion off the encoding channels. It did not say that a
+        translucent mark is not a barrier.</p>
     </div>
 
     <div class="prose" style="margin-top:2.2em">
