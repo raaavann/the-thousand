@@ -1366,7 +1366,7 @@ body{
     for (let i = CLASSES.length - 1; i >= 0; i--) if (rating >= CLASSES[i].lo) return i;
     return 0;
   }
-  const PARALLAX = 13;          // px at the extreme corner, for the nearest star
+  const PARALLAX = 13;          // dust takes all of it; stars a third, via s.par
 
   function createSky(opts) {
     const films = opts.films;
@@ -1479,6 +1479,8 @@ body{
     let stars = [];
     let cells = null, cellSize = 30, cols = 0, rows = 0;
     let hover = null, cursor = null, currentIdx = null, preview = null;
+    let curX = null, curY = null;          // pointer, for the glow lens
+    const LENS_R = 165;                    // reach, in screen px
     let raf = 0, parX = 0, parY = 0, tParX = 0, tParY = 0;
 
     // View transform. World coordinates are what the layout produced and never
@@ -1651,6 +1653,7 @@ body{
             // clearly visible against the sky rather than fading to a smudge.
             base: C.a,
             glow: C.glow,
+            par: 0.10 + (ci / 4) * 0.22,        // near classes drift most
             ph: rnd() * Math.PI * 2,            // twinkle phase, glow only
             sp: 0.5 + rnd() * 0.8,
             a: 0, ta: 0, on: true
@@ -1726,8 +1729,8 @@ body{
     // Position encodes genre, so shifting a star under the pointer shifts its
     // meaning — and moves the thing the reader is trying to click. Stars are
     // fixed; only the dust parallaxes, which is enough to read as depth.
-    const px_ = s => SX(s.x);
-    const py_ = s => SY(s.y);
+    const px_ = s => SX(s.x) + parX * s.par;
+    const py_ = s => SY(s.y) + parY * s.par;
 
     // Stars grow more slowly than the field does. Separation therefore outpaces
     // size as you zoom, which is the whole point: a star that was unclickable
@@ -1994,13 +1997,25 @@ body{
         // The glow shimmers. Independent phase per star, so the field never
         // pulses in unison — and it is only ever the halo, so the measured
         // value underneath is untouched.
-        if (s.glow > 0) {
+        // How near the pointer is, squared for a soft falloff.
+        let lens = 0;
+        if (curX !== null) {
+          const dd = Math.hypot(x - curX, y - curY);
+          if (dd < LENS_R) { const u = 1 - dd / LENS_R; lens = u * u; }
+        }
+
+        if (s.glow > 0 || lens > 0) {
           const tw = ambient
             ? 1 + 0.46 * (Math.sin(clock * s.sp + s.ph) * 0.62 +
                           Math.sin(clock * s.sp * 1.71 + s.ph * 2.3) * 0.38)
             : 1;
-          const R = rr * 6.4;
-          ctx.globalAlpha = Math.max(0, Math.min(0.55, s.a * s.glow * tw));
+          // The lens ADDS rather than multiplies, so the faintest class — 431
+          // films that barely glow at rest — lights up as strongly as the
+          // brightest. Nearness to the cursor is not a value, so it must not
+          // inherit the value ramp.
+          const g = s.glow + lens * 0.58;
+          const R = rr * (6.4 + lens * 2.6);
+          ctx.globalAlpha = Math.max(0, Math.min(0.80, s.a * g * tw));
           ctx.drawImage(halo, x - R, y - R, R * 2, R * 2);
         }
 
@@ -2058,8 +2073,8 @@ body{
         });
 
         ctx.globalCompositeOperation = 'lighter';
-        const FR = focus.r * 10 * rz();
-        ctx.globalAlpha = .42;
+        const FR = focus.r * 11.5 * rz();
+        ctx.globalAlpha = .52;
         ctx.drawImage(halo, fx - FR, fy - FR, FR * 2, FR * 2);
         ctx.globalAlpha = 1;
         ctx.globalCompositeOperation = 'source-over';
@@ -2261,6 +2276,7 @@ body{
     canvas.addEventListener('mousemove', e => {
       const r = canvas.getBoundingClientRect();
       const mx = e.clientX - r.left, my = e.clientY - r.top;
+      curX = mx; curY = my;
       setParallaxFromPointer(mx, my);
       const near = starsAt(mx, my, 5);
       const s = near[0] || null;
@@ -2277,6 +2293,7 @@ body{
 
     canvas.addEventListener('mouseleave', () => {
       hover = null;
+      curX = curY = null;
       if (onCrowd) onCrowd(null);
       tParX = 0; tParY = 0;
       showTip(cursor);
