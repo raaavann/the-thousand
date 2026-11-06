@@ -275,9 +275,30 @@ my own skill had let through:
   twinkle was modulating brightness, which is rating. Both twinkle and parallax
   are off the data now: the disc holds steady, only the glow shimmers.
 
-All three are folded back into the skill. A computed-position chart that
-can't hand over its coordinates is asking for trust it hasn't earned — so the piece now
-exposes its own positions and anchors, and anyone can re-run the check on it.
+All three are folded back into the skill.
+
+**A fourth pass, from a sentence no check would have produced: "it still
+doesn't look like stars."** It didn't, and the reason turned out to be
+measurable. Spike length was a multiple of the mark radius, and the faintest
+class's mark is 2.7px across, so its cross rendered sub-pixel and averaged away
+to nothing — probed at zero light beyond 3px from centre. Four fifths of the
+field had no star character at all, which is why every previous attempt, all of
+them spent on the brightest fifth, had changed nothing. Spike length now starts
+from a floor in field units; axis light against diagonal light at the same
+radius runs 37× for the faintest class.
+
+Chasing that turned up a leak none of the earlier passes had looked for.
+**Opacity is half of how rating is encoded, so a mark leaks whatever is
+animating behind it at one minus its opacity** — and the marks that leak most
+are the ones carrying the lowest values. Keeping the twinkle on the halo and the
+disc fixed was not enough, because the halo is drawn *under* a disc that is only
+58% opaque: the faint disc was varying 6.1% on its own. Clearing the centre out
+of the animated sprites brings it to 2.2%, against a 20% step between classes.
+That one is now a rule in the skill.
+
+A computed-position chart that can't hand over its coordinates is asking for
+trust it hasn't earned — so the piece exposes its own positions and anchors, and
+anyone can re-run the check on it.
 
 ## One correction, on the record
 
