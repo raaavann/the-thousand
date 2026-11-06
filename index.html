@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Thousand</title>
 <meta name="description" content="One thousand of the highest-rated films ever made, arranged as a depth field where every star is a film and distance from the viewer is its rating.">
-<meta name="theme-color" content="#07080b">
+<meta name="theme-color" content="#16161D">
 <meta name="color-scheme" content="dark">
 <meta property="og:title" content="The Thousand">
 <meta property="og:description" content="A constellation of the 1,000 highest-rated films on IMDb, 1920–2020.">
@@ -15,22 +15,24 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://m.media-amazon.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300..700;1,300..500&family=Jost:wght@400;500;600&family=Lora:ital,wght@0,400..600;1,400..500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300..700;1,300..500&family=Jost:wght@400;500;600&family=Playfair+Display:ital,wght@0,400..600;1,400..500&display=swap" rel="stylesheet">
 
 <style>
 /* ============================================================================
    THE THOUSAND
    ----------------------------------------------------------------------------
-   Two grounds. The page is dark grey, the chart alone is near-black. Cream on
-   pure black runs 17:1, which halates for readers with astigmatism and is
-   needlessly harsh for running text; stars, though, need the darkest field
-   available. Splitting them serves both, and the step between the two does the
-   figure-ground separation without a border.
+   Two grounds. Prose sits on a dark grey, the chart alone on pure black. Cream
+   on black measures 18.5:1, which halates for readers with astigmatism and is
+   needlessly harsh for running text — a reason to keep prose off it, not a
+   reason to deny the stars the darkest field there is, since the chart holds no
+   running text. Prose therefore runs 15.9:1 on the grey, and the 1.17:1 step
+   between the two grounds does the figure-ground separation without a border.
 
-   Text tones are checked against APCA, not only WCAG. The previous tertiary
-   passed AA at 5.5:1 and still scored Lc 39, well under the Lc 60 wanted for
-   content. Ink 2 is the lowest tone allowed to carry prose; Ink 3 is for
-   uppercase labels at 12px and 500 weight, nothing else. Nothing is below 12px.
+   Text tones are checked against APCA, not only WCAG. The tertiary this
+   replaced passed AA at 5.7:1 and still scored Lc 41, well under the Lc 60
+   wanted for content. Ink 2 is the lowest tone allowed to carry prose; Ink 3 is
+   for uppercase labels at 12px and 500 weight, nothing else. Nothing is below
+   12px.
 
    Gold has one job: selected or interactive. It is not spent on figures, anchor
    marks or network lines any more, so a filtered genre turning gold is the only
@@ -40,49 +42,57 @@
 
      Jost        the wordmark, and nothing else. Never below 32px — it is a
                  Futura descendant and loses legibility fast at small sizes.
-     Lora        the author's voice: the opening paragraph, the film title in
-                 the record. Prose a person wrote.
-     Archivo     everything functional — labels, counts, figures, controls, and
+     Playfair    the author's voice: the opening paragraph, the film title in
+     Display     the record. Prose a person wrote.
+     Inter       everything functional — labels, counts, figures, controls, and
                  the genre names on the field, set as spaced capitals the way a
                  map sets the names of regions.
    ========================================================================== */
 
 :root{
   /* ── Ground ───────────────────────────────────────────────────────────────
-     Two grounds, deliberately. The page is a dark grey; the chart alone is
-     near-black. Pure white on pure black halates for readers with astigmatism
-     and is simply harsh at 17:1, so running text sits on grey. But stars need
-     the darkest possible field to read against, so the chart keeps #07080B —
-     and the step between the two does the figure-ground work for free. */
-  --page:    #12151C;   /* the document — navy-tinted, not neutral */
-  --page-2:  #191D26;   /* raised panels, the record */
-  --sky:     #06070C;   /* the chart, and only the chart */
+     Two grounds, deliberately. Prose sits on a dark grey; the chart alone is
+     pure black. Cream on black runs 18.5:1 and halates for readers with
+     astigmatism, which is a reason to keep running text off it — not a reason
+     to deny the stars the darkest field available, since the chart carries no
+     prose. The 1.17:1 step between the two does the figure-ground work for
+     free, with no border. */
+  --page:    #16161D;   /* Eigengrau — the document */
+  --page-2:  #1D1D25;   /* raised panels, the record */
+  --sky:     #000000;   /* Black — the chart, and only the chart */
 
   /* ── Ink ──────────────────────────────────────────────────────────────────
-     Measured against --page. WCAG AA is a floor, not a target: #8E8879 passed
-     AA at 5.7:1 and still scored only Lc 39 under APCA, which is well under the
-     Lc 60 wanted for content text. Ink 2 is the lowest tone allowed to carry
-     anything a reader has to read. Ink 3 is for 12px+ uppercase labels only. */
-  --ink:     #F0ECE4;   /* primary */
-  --ink-2:   #BDB7AB;   /* secondary — content text, APCA ~Lc 62 */
-  --ink-3:   #948F84;   /* labels at 12px+ and 500 weight, never prose */
+     Measured against --page, in APCA as well as WCAG, because AA is a floor and
+     not a target: the tertiary these replaced passed AA at 5.7:1 and still
+     scored only Lc 41, well under the Lc 60 wanted for content text. Ink 2 is
+     the lowest tone allowed to carry anything a reader has to read. Ink 3 is
+     for 12px+ uppercase labels only. */
+  --ink:     #F4F0EC;   /* Isabelline — primary.     Lc 97,  15.9:1 */
+  --ink-2:   #BCB9B6;   /* content text.             Lc 64,   9.2:1 */
+  --ink-3:   #A3A09E;   /* 12px+ labels, never prose. Lc 50,  6.9:1 */
 
   /* ── Accent: one job ──────────────────────────────────────────────────────
-     Gold means "selected or interactive" and nothing else. It is no longer
-     spent on rating figures, anchor dots or network lines, so when a genre is
-     filtered its films turn gold and the eye goes straight there. */
+     Gold means "selected or interactive": the filtered genre, the hovered
+     star's ring, the lines from a focused film to its genres. It is not spent
+     on rating figures.
+
+     One exception, and it is deliberate rather than forgotten: the
+     co-occurrence lines between anchors are drawn in the same hue at 3–10.5%
+     alpha. At that strength it reads as structure rather than as accent, but it
+     is the one place gold appears without meaning "selected", so it is the
+     first thing to change if the accent ever stops feeling exclusive. */
   /* The brightest of the five star classes, lifted out so the wordmark and the
      top of the rating scale are provably the same colour rather than two hex
      values that happen to look alike. Mirrors CLASSES[4].ink in sky.js. */
   --star:    #FFFAE8;
 
-  --gold:    #D7B071;
-  --gold-2:  #A8874F;
+  --gold:    #D4AF37;   /* Metallic gold. Lc 60 on --page */
+  --gold-2:  #A3862D;   /* unused. Lc 38, so not a text tone if it is ever taken up */
 
   /* ── Hairlines ─────────────────────────────────────────────────────────── */
-  --rule:    rgba(240,236,228,.13);
-  --rule-2:  rgba(240,236,228,.07);
-  --rule-3:  rgba(240,236,228,.30);
+  --rule:    rgba(244,240,236,.13);
+  --rule-2:  rgba(244,240,236,.07);
+  --rule-3:  rgba(244,240,236,.30);
 
   /* ── Grid ──────────────────────────────────────────────────────────────── */
   --cols:    12;
@@ -113,7 +123,7 @@ body{
   margin:0;
   background:var(--page);
   color:var(--ink);
-  font-family:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
   font-size:var(--t-base);
   font-weight:350;
   line-height:1.6;
@@ -223,7 +233,7 @@ body{
 .masthead__deck{
   margin:0;
   max-width:62ch;   /* sets the deck on two lines, not three */
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-size:var(--t-md);
   line-height:1.62;
   color:var(--ink-2);
@@ -314,7 +324,7 @@ body{
   font-size:var(--t-sm); color:var(--ink-3);
 }
 .count b{
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-weight:400; font-size:var(--t-lg); color:var(--ink);
   font-variant-numeric:lining-nums tabular-nums;
 }
@@ -377,7 +387,7 @@ body{
      faint coloured ground is what makes them read as depth. Both are under 6%,
      so nothing measurable is lost against the stars. */
   background:
-    radial-gradient(120% 82% at 56% 36%, rgba(186,138,62,.075), transparent 62%),
+    radial-gradient(120% 82% at 56% 36%, rgba(212,175,55,.075), transparent 62%),
     radial-gradient(90% 68% at 20% 18%, rgba(84,68,152,.045), transparent 66%),
     radial-gradient(85% 62% at 84% 84%, rgba(58,96,158,.040), transparent 68%),
     var(--sky);
@@ -388,7 +398,7 @@ body{
   content:"";
   position:absolute; inset:0; z-index:3;
   pointer-events:none;
-  background:radial-gradient(120% 96% at 50% 50%, transparent 52%, rgba(7,8,11,.72) 100%);
+  background:radial-gradient(120% 96% at 50% 50%, transparent 52%, rgba(0,0,0,.72) 100%);
 }
 
 #sky-canvas{
@@ -413,9 +423,9 @@ body{
   will-change:transform;
   pointer-events:auto;
   background:none; border:0; padding:5px 8px; cursor:pointer;
-  font-family:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
   font-weight:500;
-  letter-spacing:.085em;
+  letter-spacing:.09em;
   text-transform:uppercase;
   font-size:12px;
   line-height:1;
@@ -433,7 +443,7 @@ body{
   width:252px;
   display:grid; grid-template-columns:52px 1fr; gap:12px;
   padding:11px 13px 12px;
-  background:rgba(10,12,16,.93);
+  background:rgba(22,22,29,.93);
   border:1px solid var(--rule-3);
   box-shadow:0 20px 44px -18px rgba(0,0,0,.95);
   will-change:transform;
@@ -445,7 +455,7 @@ body{
 .sky__tip-b{ min-width:0; align-self:center; }
 .sky__tip b{
   display:block;
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-weight:400; font-size:16px; line-height:1.16;
   color:var(--ink); margin-bottom:6px;
   overflow-wrap:anywhere;
@@ -507,12 +517,12 @@ body{
 .sky__empty{
   position:absolute; inset:0; z-index:7;
   display:grid; place-content:center; justify-items:center; gap:18px;
-  background:rgba(7,8,11,.8);
+  background:rgba(0,0,0,.8);
   text-align:center;
 }
 .sky__empty p{
   margin:0;
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-size:var(--t-xl); color:var(--ink-2);
 }
 .sky__empty button{
@@ -571,7 +581,7 @@ body{
 .sky__note{
   grid-column:9 / span 4;
   margin:0;
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-size:var(--t-sm);
   line-height:1.65;
   color:var(--ink-3);
@@ -603,13 +613,13 @@ body{
 }
 .section__title{
   margin:0;
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-weight:400; font-size:var(--t-xl); line-height:1;
   letter-spacing:-.012em; white-space:nowrap;
   color:var(--ink);
 }
 .section__note{
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-style:italic; font-size:var(--t-sm); color:var(--ink-3);
   min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
 }
@@ -661,13 +671,13 @@ body{
   position:absolute; inset:0; z-index:0;
   display:flex; align-items:flex-end; padding:9px;
   background:linear-gradient(160deg,var(--page-2),var(--sky));
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-size:12px; line-height:1.22; color:var(--ink-2);
 }
 .tile__cap{
   position:absolute; inset:auto 0 0 0; z-index:2;
   padding:24px 9px 10px;
-  background:linear-gradient(transparent,rgba(5,6,8,.86) 44%,rgba(5,6,8,.96));
+  background:linear-gradient(transparent,rgba(0,0,0,.86) 44%,rgba(0,0,0,.96));
   opacity:0; transform:translateY(6px);
   transition:opacity .26s var(--ease), transform .26s var(--ease);
 }
@@ -675,7 +685,7 @@ body{
 .tile__cap b{
   display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;
   overflow:hidden;
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-weight:400; font-size:12.5px; line-height:1.2; color:var(--ink);
 }
 .tile__cap span{
@@ -690,7 +700,7 @@ body{
 .tile__rank{
   position:absolute; top:0; right:0; z-index:4;
   padding:4px 7px;
-  background:rgba(5,6,8,.78);
+  background:rgba(0,0,0,.78);
   font-size:12px; letter-spacing:.05em; color:var(--ink);
   font-variant-numeric:tabular-nums;
   opacity:0; transition:opacity .26s var(--ease);
@@ -703,7 +713,7 @@ body{
 }
 .empty p{
   margin:0 0 18px;
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-size:var(--t-xl); color:var(--ink-2);
 }
 .empty button{
@@ -720,7 +730,7 @@ body{
 
 .scrim{
   position:fixed; inset:0; z-index:90;
-  background:rgba(5,6,8,.66);
+  background:rgba(0,0,0,.66);
   opacity:0; pointer-events:none;
   transition:opacity .36s var(--ease);
 }
@@ -776,7 +786,7 @@ body{
 
 .plate h2{
   margin:0 0 12px;
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-weight:400; font-size:clamp(27px,2.4vw,36px);
   line-height:1.06; letter-spacing:-.015em;
   color:var(--ink); text-wrap:balance;
@@ -798,7 +808,7 @@ body{
   padding:22px 0; border-bottom:1px solid var(--rule);
 }
 .score__big{
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-size:56px; line-height:.84; letter-spacing:-.028em;
   color:var(--ink);
   font-variant-numeric:lining-nums tabular-nums;
@@ -815,7 +825,7 @@ body{
 
 .plate__quote{
   margin:24px 0;
-  font-family:"Lora",Georgia,serif;
+  font-family:"Playfair Display",Georgia,serif;
   font-size:var(--t-md); line-height:1.55; font-style:italic;
   color:var(--ink); text-wrap:pretty;
 }
@@ -895,7 +905,7 @@ body{
 
   .controls__left{ flex-wrap:wrap; gap:12px 18px; }
   .sky__stage{ height:clamp(420px,64vh,600px); }
-  .sky__label{ font-size:12px; padding:4px 5px; }
+  .sky__label{ padding:4px 5px; }   /* size is 12px everywhere; just tighten the box */
   .sky__tip{ width:216px; grid-template-columns:44px 1fr; }
   .sky__tip img{ width:44px; height:66px; }
   .decades__bars{ height:50px; gap:2px; }
@@ -958,7 +968,7 @@ body{
 .sky__zoom button{
   width:30px; height:30px;
   display:grid; place-items:center;
-  background:rgba(10,12,16,.72);
+  background:rgba(22,22,29,.72);
   border:1px solid var(--rule);
   color:var(--ink-2);
   font:inherit; font-size:15px; line-height:1;
@@ -984,10 +994,14 @@ body{
 }
 
 
-/* ── Genre labels, sized by how many films the genre holds ────────────────── */
-.sky__label[data-tier="lg"]{ font-size:14.5px; letter-spacing:.1em;  color:var(--ink); }
-.sky__label[data-tier="md"]{ font-size:13px;   letter-spacing:.09em; }
-.sky__label[data-tier="sm"]{ font-size:12px;   letter-spacing:.075em; color:var(--ink-3); }
+/* ── Genre labels: one size, one tone, all twenty-one ─────────────────────
+   They used to be set in three sizes by how many films the genre held, after
+   the way an atlas sizes a place name by its population. An atlas has space
+   between its names; this field does not, and at twenty-one names over a
+   dense core the variation read as untidiness rather than as rank. The exact
+   count is in the rail above the chart, which is a better place to state it
+   than the width of a word. Size is set on the base rule above; the only
+   thing that changes a label now is state. */
 .sky__label:hover,
 .sky__label[data-on="true"]{ color:var(--gold); }
 
@@ -1012,7 +1026,7 @@ body{
 .sky__steps{
   position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
   z-index:8; width:min(560px, calc(100% - 48px));
-  background:rgba(10,12,16,.93);
+  background:rgba(22,22,29,.93);
   border:1px solid var(--rule-3);
   padding:26px 30px 24px;
   text-align:left;
@@ -1042,7 +1056,7 @@ body{
 .sky__hintbox{
   position:absolute; left:50%; bottom:22px; transform:translateX(-50%);
   z-index:8; pointer-events:none;
-  background:rgba(10,12,16,.94); border:1px solid var(--rule-3);
+  background:rgba(22,22,29,.94); border:1px solid var(--rule-3);
   padding:9px 15px; font-size:var(--t-sm); color:var(--ink-2);
   opacity:0; transition:opacity .25s var(--ease);
   white-space:nowrap;
@@ -1057,22 +1071,23 @@ body{
 /* ── Crowded pick: the films under the pointer, listed ────────────────────── */
 .sky__crowd{
   position:absolute; z-index:7; pointer-events:auto;
-  background:rgba(10,12,16,.95); border:1px solid var(--rule-3);
-  padding:6px; min-width:200px; max-width:260px;
+  background:rgba(22,22,29,.95); border:1px solid var(--rule-3);
+  padding:6px; min-width:200px; max-width:280px;
 }
 .sky__crowd-h{
   font-size:12px; letter-spacing:.12em; text-transform:uppercase;
   color:var(--ink-3); padding:4px 8px 7px;
 }
 .sky__crowd button{
-  display:block; width:100%; text-align:left;
+  display:flex; justify-content:space-between; align-items:baseline; gap:16px;
+  width:100%; text-align:left;
   background:none; border:0; cursor:pointer;
   padding:7px 8px; font:inherit; font-size:var(--t-sm); color:var(--ink-2);
   border-top:1px solid var(--rule-2);
 }
-.sky__crowd button:hover{ background:rgba(215,176,113,.14); color:var(--ink); }
+.sky__crowd button:hover{ background:rgba(212,175,55,.14); color:var(--ink); }
 .sky__crowd button span{
-  float:right; color:var(--ink-3); font-variant-numeric:tabular-nums;
+  flex:none; color:var(--ink-3); font-variant-numeric:tabular-nums;
 }
 
 /* ── The IMDb badge, calmed ────────────────────────────────────────────────
@@ -1130,7 +1145,7 @@ body{
       <svg class="logo__imdb" viewBox="0 0 64 32" role="img" aria-label="IMDb">
         <rect x="1" y="1" width="62" height="30" rx="5" />
         <text x="32" y="22.6" text-anchor="middle"
-              font-family="Archivo, Helvetica Neue, Helvetica, Arial, sans-serif"
+              font-family="Inter, Helvetica Neue, Helvetica, Arial, sans-serif"
               font-size="18" font-weight="600" letter-spacing="-0.3">IMDb</text>
       </svg>
     </h1>
@@ -1938,15 +1953,13 @@ body{
     let labelState = [];
 
     function buildLabels() {
-      // Three size steps by genre size. Thresholds sit at natural gaps in the
-      // distribution: 21 genres run from Drama at 724 down to Musical at 17.
-      const tier = g => {
-        const n = size[gi[g]];
-        return n >= 180 ? 'lg' : (n >= 60 ? 'md' : 'sm');
-      };
+      // One size for all of them. Ranking the names by how many films each
+      // genre holds is what an atlas does with place names, and it needs the
+      // space an atlas has: at twenty-one labels over this core it read as
+      // untidiness. The count is stated exactly in the rail above the chart.
       labelLayer.innerHTML = genres.map(g =>
-        '<button type="button" class="sky__label" data-tier="' + tier(g) +
-        '" data-genre="' + g + '">' + g + '</button>').join('');
+        '<button type="button" class="sky__label" data-genre="' + g +
+        '">' + g + '</button>').join('');
       labelState = Array.from(labelLayer.children).map(el => {
         const r = el.getBoundingClientRect();
         const g = el.dataset.genre;
@@ -2064,7 +2077,7 @@ body{
       ctx.lineWidth = 1;
       links.forEach(l => {
         const A = anchors[l.a], B = anchors[l.b];
-        ctx.strokeStyle = 'rgba(203,167,108,' + (0.030 + 0.075 * l.s).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(212,175,55,' + (0.030 + 0.075 * l.s).toFixed(3) + ')';
         ctx.beginPath(); ctx.moveTo(SX(A.x), SY(A.y)); ctx.lineTo(SX(B.x), SY(B.y)); ctx.stroke();
       });
 
@@ -2073,7 +2086,7 @@ body{
       // "this is the anchor" rather than "stars missing".
       genres.forEach(g => {
         const A = anchors[g];
-        ctx.strokeStyle = 'rgba(244,239,230,.22)';
+        ctx.strokeStyle = 'rgba(244,240,236,.22)';
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.arc(SX(A.x), SY(A.y), 3.2, 0, Math.PI * 2); ctx.stroke();
       });
@@ -2182,7 +2195,7 @@ body{
         const len = Math.hypot(dx, dy) || 1;
         // Stop the line at the edge of the text, not at its centre.
         const t = Math.min(1, (b.w / 2 + 7) / len);
-        ctx.strokeStyle = 'rgba(244,239,230,.24)';
+        ctx.strokeStyle = 'rgba(244,240,236,.24)';
         ctx.beginPath();
         ctx.moveTo(b.x + dx * t, b.y + dy * t);
         ctx.lineTo(b.ax, b.ay);
@@ -2192,9 +2205,9 @@ body{
       labelBoxes.forEach(b => {
         const rx = b.w * 0.85, ry = b.h * 1.5;
         const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, Math.max(rx, ry));
-        g.addColorStop(0, 'rgba(10,12,16,.92)');
-        g.addColorStop(0.55, 'rgba(10,12,16,.62)');
-        g.addColorStop(1, 'rgba(10,12,16,0)');
+        g.addColorStop(0, 'rgba(0,0,0,.92)');
+        g.addColorStop(0.55, 'rgba(0,0,0,.62)');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.save();
         ctx.translate(b.x, b.y); ctx.scale(rx / Math.max(rx, ry), ry / Math.max(rx, ry));
         ctx.translate(-b.x, -b.y);
@@ -2212,9 +2225,9 @@ body{
         focus.f.genres.forEach(g => {
           const A = anchors[g];
           if (!A) return;
-          ctx.strokeStyle = 'rgba(203,167,108,.66)';
+          ctx.strokeStyle = 'rgba(212,175,55,.66)';
           ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(SX(A.x), SY(A.y)); ctx.stroke();
-          ctx.fillStyle = 'rgba(203,167,108,.9)';
+          ctx.fillStyle = 'rgba(212,175,55,.9)';
           ctx.beginPath(); ctx.arc(SX(A.x), SY(A.y), 3.2, 0, Math.PI * 2); ctx.fill();
         });
 
@@ -2231,7 +2244,7 @@ body{
       // The ring on whatever the next click would take, drawn before the click.
       if (hover && hover !== cursor) {
         const hx = px_(hover), hy = py_(hover);
-        ctx.strokeStyle = 'rgba(203,167,108,.5)';
+        ctx.strokeStyle = 'rgba(212,175,55,.5)';
         ctx.lineWidth = 1;
         ctx.setLineDash([2, 3]);
         ctx.beginPath();
@@ -2242,7 +2255,7 @@ body{
 
       if (currentIdx !== null) {
         const cur = stars.find(s => s.f.i === currentIdx);
-        if (cur && cur !== focus) ring(px_(cur), py_(cur), cur.r * 3.6 * rz() + 6, 'rgba(203,167,108,.9)');
+        if (cur && cur !== focus) ring(px_(cur), py_(cur), cur.r * 3.6 * rz() + 6, 'rgba(212,175,55,.9)');
       }
     }
 

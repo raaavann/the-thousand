@@ -632,15 +632,13 @@
     let labelState = [];
 
     function buildLabels() {
-      // Three size steps by genre size. Thresholds sit at natural gaps in the
-      // distribution: 21 genres run from Drama at 724 down to Musical at 17.
-      const tier = g => {
-        const n = size[gi[g]];
-        return n >= 180 ? 'lg' : (n >= 60 ? 'md' : 'sm');
-      };
+      // One size for all of them. Ranking the names by how many films each
+      // genre holds is what an atlas does with place names, and it needs the
+      // space an atlas has: at twenty-one labels over this core it read as
+      // untidiness. The count is stated exactly in the rail above the chart.
       labelLayer.innerHTML = genres.map(g =>
-        '<button type="button" class="sky__label" data-tier="' + tier(g) +
-        '" data-genre="' + g + '">' + g + '</button>').join('');
+        '<button type="button" class="sky__label" data-genre="' + g +
+        '">' + g + '</button>').join('');
       labelState = Array.from(labelLayer.children).map(el => {
         const r = el.getBoundingClientRect();
         const g = el.dataset.genre;
@@ -758,7 +756,7 @@
       ctx.lineWidth = 1;
       links.forEach(l => {
         const A = anchors[l.a], B = anchors[l.b];
-        ctx.strokeStyle = 'rgba(203,167,108,' + (0.030 + 0.075 * l.s).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(212,175,55,' + (0.030 + 0.075 * l.s).toFixed(3) + ')';
         ctx.beginPath(); ctx.moveTo(SX(A.x), SY(A.y)); ctx.lineTo(SX(B.x), SY(B.y)); ctx.stroke();
       });
 
@@ -767,7 +765,7 @@
       // "this is the anchor" rather than "stars missing".
       genres.forEach(g => {
         const A = anchors[g];
-        ctx.strokeStyle = 'rgba(244,239,230,.22)';
+        ctx.strokeStyle = 'rgba(244,240,236,.22)';
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.arc(SX(A.x), SY(A.y), 3.2, 0, Math.PI * 2); ctx.stroke();
       });
@@ -876,7 +874,7 @@
         const len = Math.hypot(dx, dy) || 1;
         // Stop the line at the edge of the text, not at its centre.
         const t = Math.min(1, (b.w / 2 + 7) / len);
-        ctx.strokeStyle = 'rgba(244,239,230,.24)';
+        ctx.strokeStyle = 'rgba(244,240,236,.24)';
         ctx.beginPath();
         ctx.moveTo(b.x + dx * t, b.y + dy * t);
         ctx.lineTo(b.ax, b.ay);
@@ -886,9 +884,9 @@
       labelBoxes.forEach(b => {
         const rx = b.w * 0.85, ry = b.h * 1.5;
         const g = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, Math.max(rx, ry));
-        g.addColorStop(0, 'rgba(10,12,16,.92)');
-        g.addColorStop(0.55, 'rgba(10,12,16,.62)');
-        g.addColorStop(1, 'rgba(10,12,16,0)');
+        g.addColorStop(0, 'rgba(0,0,0,.92)');
+        g.addColorStop(0.55, 'rgba(0,0,0,.62)');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.save();
         ctx.translate(b.x, b.y); ctx.scale(rx / Math.max(rx, ry), ry / Math.max(rx, ry));
         ctx.translate(-b.x, -b.y);
@@ -906,9 +904,9 @@
         focus.f.genres.forEach(g => {
           const A = anchors[g];
           if (!A) return;
-          ctx.strokeStyle = 'rgba(203,167,108,.66)';
+          ctx.strokeStyle = 'rgba(212,175,55,.66)';
           ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(SX(A.x), SY(A.y)); ctx.stroke();
-          ctx.fillStyle = 'rgba(203,167,108,.9)';
+          ctx.fillStyle = 'rgba(212,175,55,.9)';
           ctx.beginPath(); ctx.arc(SX(A.x), SY(A.y), 3.2, 0, Math.PI * 2); ctx.fill();
         });
 
@@ -925,7 +923,7 @@
       // The ring on whatever the next click would take, drawn before the click.
       if (hover && hover !== cursor) {
         const hx = px_(hover), hy = py_(hover);
-        ctx.strokeStyle = 'rgba(203,167,108,.5)';
+        ctx.strokeStyle = 'rgba(212,175,55,.5)';
         ctx.lineWidth = 1;
         ctx.setLineDash([2, 3]);
         ctx.beginPath();
@@ -936,7 +934,7 @@
 
       if (currentIdx !== null) {
         const cur = stars.find(s => s.f.i === currentIdx);
-        if (cur && cur !== focus) ring(px_(cur), py_(cur), cur.r * 3.6 * rz() + 6, 'rgba(203,167,108,.9)');
+        if (cur && cur !== focus) ring(px_(cur), py_(cur), cur.r * 3.6 * rz() + 6, 'rgba(212,175,55,.9)');
       }
     }
 
